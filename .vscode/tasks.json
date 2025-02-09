@@ -1,0 +1,26 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build ROS 2 Package",
+            "type": "shell",
+            "command": "cd ../.. && colcon build --symlink-install",
+            "args": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Source ROS 2 and Open Terminal",
+            "type": "shell",
+            "command": "bash -c 'source /opt/ros/jazzy/setup.bash && source ~/ros2_ws/install/setup.bash && exec bash'",
+            "group": {
+                "kind": "build",
+                "isDefault": false
+            },
+            "problemMatcher": []
+        }
+    ]
+}

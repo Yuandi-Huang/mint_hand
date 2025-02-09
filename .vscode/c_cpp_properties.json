@@ -5,7 +5,6 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "/opt/ros/jazzy/include/**",
-                "/ros2_ws/src/**",
                 "/ros2_ws/src/DynamixelSDK/dynamixel_sdk/include"
             ],
             "defines": [],

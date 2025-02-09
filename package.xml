@@ -10,9 +10,9 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
-  <depend>dynamixel_sdk_examples</depend>
   <depend>dynamixel_sdk</depend>
   <depend>rosidl_default_generators</depend>
+  <depend>rosidl_default_runtime</depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
