@@ -10,7 +10,7 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(dynamixel_sdk REQUIRED)
 find_package(rosidl_default_generators REQUIRED)  
-find_package(finger_manipulation REQUIRED)  
+find_package(rosidl_default_runtime REQUIRED)
 
 set(msg_files
   "msg/SetPosition.msg"
@@ -26,13 +26,17 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   DEPENDENCIES std_msgs
 )
 
+ament_export_dependencies(rosidl_default_runtime rclcpp std_msgs dynamixel_sdk)
+
 add_executable(read_write_node src/read_write_node.cpp)
-ament_target_dependencies(read_write_node rclcpp std_msgs dynamixel_sdk finger_manipulation)
+target_link_libraries(read_write_node
+  finger_manipulation__rosidl_typesupport_cpp
+)
+ament_target_dependencies(read_write_node rclcpp std_msgs dynamixel_sdk rosidl_default_runtime)
 
 install(TARGETS 
   read_write_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
-ament_export_dependencies(rosidl_default_runtime rclcpp std_msgs dynamixel_sdk)
 ament_package()
