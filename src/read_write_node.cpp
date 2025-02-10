@@ -1,6 +1,7 @@
 #include <rclcpp/rclcpp.hpp>
 #include "std_msgs/msg/string.hpp"
 #include "finger_manipulation/srv/get_position.hpp"
+#include "finger_manipulation/srv/get_temperature.hpp"
 #include "finger_manipulation/msg/set_position.hpp"
 #include "dynamixel_sdk/dynamixel_sdk.h"
 
@@ -12,6 +13,7 @@ using std::placeholders::_2;
 #define ADDR_TORQUE_ENABLE    64
 #define ADDR_GOAL_POSITION    116
 #define ADDR_PRESENT_POSITION 132
+#define ADDR_PRESENT_TEMP     146
 
 // Protocol version
 #define PROTOCOL_VERSION      2.0 
@@ -26,34 +28,38 @@ class ReadWriteNode : public rclcpp::Node {
 public:
     ReadWriteNode() : Node("read_write_node") {
       
-        portHandler = PortHandler::getPortHandler(DEVICE_NAME);
-        packetHandler = PacketHandler::getPacketHandler(PROTOCOL_VERSION);
+      portHandler = PortHandler::getPortHandler(DEVICE_NAME);
+      packetHandler = PacketHandler::getPacketHandler(PROTOCOL_VERSION);
 
-        if (!portHandler->openPort()) {
-            RCLCPP_ERROR(this->get_logger(), "Failed to open the port!");
-            rclcpp::shutdown();
-            return;
-        }
+      if (!portHandler->openPort()) {
+          RCLCPP_ERROR(this->get_logger(), "Failed to open the port!");
+          rclcpp::shutdown();
+          return;
+      }
 
-        if (!portHandler->setBaudRate(BAUDRATE)) {
-            RCLCPP_ERROR(this->get_logger(), "Failed to set the baudrate!");
-            rclcpp::shutdown();
-            return;
-        }
+      if (!portHandler->setBaudRate(BAUDRATE)) {
+          RCLCPP_ERROR(this->get_logger(), "Failed to set the baudrate!");
+          rclcpp::shutdown();
+          return;
+      }
 
-        // Enable torque for both motors
-        enableTorque(DXL1_ID);
-        enableTorque(DXL2_ID);
+      // Enable torque for both motors
+      enableTorque(DXL1_ID);
+      enableTorque(DXL2_ID);
 
-        // Create ROS 2 service
-        get_position_srv_ = this->create_service<finger_manipulation::srv::GetPosition>(
-            "/get_position",
-            std::bind(&ReadWriteNode::getPresentPositionCallback, this, _1, _2));
+      // Create services
+      get_position_srv_ = this->create_service<finger_manipulation::srv::GetPosition>(
+          "/get_position",
+          std::bind(&ReadWriteNode::getPresentPositionCallback, this, _1, _2));
 
-        // Create ROS 2 subscriber
-        set_position_sub_ = this->create_subscription<finger_manipulation::msg::SetPosition>(
-            "/set_position", 10,
-            std::bind(&ReadWriteNode::setPositionCallback, this, _1));
+      get_temperature_srv_ = this->create_service<finger_manipulation::srv::GetTemperature>(
+          "/get_temperature",
+          std::bind(&ReadWriteNode::getPresentTemperatureCallback, this, _1, _2));
+
+      // Create subscribers
+      set_position_sub_ = this->create_subscription<finger_manipulation::msg::SetPosition>(
+          "/set_position", 10,
+          std::bind(&ReadWriteNode::setPositionCallback, this, _1));
     }
 
     ~ReadWriteNode() {
@@ -62,6 +68,7 @@ public:
 
 private:
     rclcpp::Service<finger_manipulation::srv::GetPosition>::SharedPtr get_position_srv_;
+    rclcpp::Service<finger_manipulation::srv::GetTemperature>::SharedPtr get_temperature_srv_;
     rclcpp::Subscription<finger_manipulation::msg::SetPosition>::SharedPtr set_position_sub_;
 
     PortHandler * portHandler;
@@ -95,6 +102,26 @@ private:
         } else {
             RCLCPP_ERROR(this->get_logger(), "Failed to get position! Result: %d", dxl_comm_result);
         }
+    }
+
+    void getPresentTemperatureCallback(
+      const std::shared_ptr<finger_manipulation::srv::GetTemperature::Request> request,
+      std::shared_ptr<finger_manipulation::srv::GetTemperature::Response> response) {
+
+      uint8_t dxl_error = 0;
+      int dxl_comm_result = COMM_TX_FAIL;
+      int8_t temperature = 0;
+
+      dxl_comm_result = packetHandler->read1ByteTxRx(
+          portHandler, (uint8_t)request->id, ADDR_PRESENT_TEMP, 
+          (uint8_t *)&temperature, &dxl_error);
+
+      if (dxl_comm_result == COMM_SUCCESS) {
+          RCLCPP_INFO(this->get_logger(), "getTemperature : [ID:%d] -> [TEMPERATURE:%d]", request->id, temperature);
+          response->temperature = temperature;
+      } else {
+          RCLCPP_ERROR(this->get_logger(), "Failed to get temperature! Result: %d", dxl_comm_result);
+      }
     }
 
     void setPositionCallback(const finger_manipulation::msg::SetPosition::SharedPtr msg) {

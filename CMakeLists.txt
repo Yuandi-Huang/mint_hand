@@ -18,6 +18,7 @@ set(msg_files
 
 set(srv_files
   "srv/GetPosition.srv"
+  "srv/GetTemperature.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
