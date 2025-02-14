@@ -1,0 +1,5 @@
+<library path="src/rqt_plugin">
+    <class name="RqtPlugin" type="rqt_plugin.plugin.RqtPlugin" base_class_type="rqt_gui_py::Plugin">
+        <description>Finger Manipulation RQt Plugin</description>
+    </class>
+</library>
