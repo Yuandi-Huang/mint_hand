@@ -14,11 +14,13 @@ find_package(rosidl_default_runtime REQUIRED)
 
 set(msg_files
   "msg/SetPosition.msg"
+  "msg/SetCurrent.msg"
 )
 
 set(srv_files
   "srv/GetPosition.srv"
   "srv/GetTemperature.srv"
+  "srv/SetOperatingMode.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -29,14 +31,14 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 ament_export_dependencies(rosidl_default_runtime rclcpp std_msgs dynamixel_sdk)
 
-add_executable(read_write_node src/read_write_node.cpp)
-target_link_libraries(read_write_node
+add_executable(finger_driver src/finger_driver.cpp)
+target_link_libraries(finger_driver
   finger_manipulation__rosidl_typesupport_cpp
 )
-ament_target_dependencies(read_write_node rclcpp std_msgs dynamixel_sdk rosidl_default_runtime)
+ament_target_dependencies(finger_driver rclcpp std_msgs dynamixel_sdk rosidl_default_runtime)
 
 install(TARGETS 
-  read_write_node
+  finger_driver
   DESTINATION lib/${PROJECT_NAME}
 )
 
