@@ -4,7 +4,7 @@
   <name>finger_manipulation</name>
   <version>0.0.0</version>
   <description>Individual joint control for a single finger</description>
-  <maintainer email="yuandi@umich.edu">root</maintainer>
+  <maintainer email="yuandi@umich.edu">Yuandi Huang</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>

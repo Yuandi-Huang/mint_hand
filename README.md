@@ -1,7 +1,9 @@
-# Robotic Finger Control Package
 ## Overview
 
-ROS 2 package enabling communication with a 4-DOF robotic finger.
+Repository of ROS 2 packages for communication with a 4-DOF robotic finger.\
+Contains two packages:
+ - finger_manipulation: a driver node for main control functions
+ - rqt_finger_manipulation: a customized GUI plugin for controlling with rqt
 
 ## Dependencies
  - [ROS 2](https://docs.ros.org/en/jazzy/Installation.html)
@@ -10,6 +12,7 @@ ROS 2 package enabling communication with a 4-DOF robotic finger.
 ```
 git clone https://github.com/Yuandi-Huang/finger_manipulation.git
 colcon build --packages-select finger_manipulation
+colcon build --packages-select rqt_finger_manipulation
 source install/setup.bash
 ```
 ## Acknowledgments
