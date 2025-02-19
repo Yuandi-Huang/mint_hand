@@ -11,7 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class Ui_main_window(object):
+class main_window(object):
     def setupUi(self, main_window):
         main_window.setObjectName("main_window")
         main_window.resize(307, 597)

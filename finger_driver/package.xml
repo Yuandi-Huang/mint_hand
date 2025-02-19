@@ -4,19 +4,15 @@
   <name>finger_manipulation</name>
   <version>0.0.0</version>
   <description>Individual joint control for a single finger</description>
-  <maintainer email="yuandi@umich.edu">root</maintainer>
+  <maintainer email="yuandi@umich.edu">Yuandi Huang</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
-  <buildtool_depend>ament_cmake_python</buildtool_depend>
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
   <depend>dynamixel_sdk</depend>
   <depend>rosidl_default_generators</depend>
   <depend>rosidl_default_runtime</depend>
-  <exec_depend>rqt_gui</exec_depend>
-  <exec_depend>rqt_gui_py</exec_depend>
-  <exec_depend>python3</exec_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 
@@ -24,7 +20,7 @@
   <test_depend>ament_lint_common</test_depend>
 
   <export>
-    <build_type>ament_cmake_python</build_type>
     <build_type>ament_cmake</build_type>
   </export>
+
 </package>
