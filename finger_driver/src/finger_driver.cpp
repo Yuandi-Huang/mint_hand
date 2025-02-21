@@ -39,24 +39,24 @@ enum class OperatingMode : uint8_t {
     CURRENT_BASED_POSITION = 5
 };
 
-class ReadWriteNode : public rclcpp::Node {
+class finger_driver : public rclcpp::Node {
 public:
-    ReadWriteNode() : Node("read_write_node") {
+    finger_driver() : Node("finger_driver") {
 
         portHandler = PortHandler::getPortHandler(DEVICE_NAME);
         packetHandler = PacketHandler::getPacketHandler(PROTOCOL_VERSION);
 
-        if (!portHandler->openPort()) {
-            RCLCPP_ERROR(this->get_logger(), "Failed to open the port!");
-            rclcpp::shutdown();
-            return;
-        }
+        // if (!portHandler->openPort()) {
+        //     RCLCPP_ERROR(this->get_logger(), "Failed to open the port!");
+        //     rclcpp::shutdown();
+        //     return;
+        // }
 
-        if (!portHandler->setBaudRate(BAUDRATE)) {
-            RCLCPP_ERROR(this->get_logger(), "Failed to set the baudrate!");
-            rclcpp::shutdown();
-            return;
-        }
+        // if (!portHandler->setBaudRate(BAUDRATE)) {
+        //     RCLCPP_ERROR(this->get_logger(), "Failed to set the baudrate!");
+        //     rclcpp::shutdown();
+        //     return;
+        // }
        
         connected = true;
 
@@ -69,27 +69,27 @@ public:
         // Create services
         get_position_srv_ = this->create_service<finger_manipulation::srv::GetPosition>(
             "/get_position",
-            std::bind(&ReadWriteNode::getPresentPositionCallback, this, _1, _2));
+            std::bind(&finger_driver::getPresentPositionCallback, this, _1, _2));
 
         get_temperature_srv_ = this->create_service<finger_manipulation::srv::GetTemperature>(
             "/get_temperature",
-            std::bind(&ReadWriteNode::getPresentTemperatureCallback, this, _1, _2));
+            std::bind(&finger_driver::getPresentTemperatureCallback, this, _1, _2));
 
         set_operating_mode_srv_ = this->create_service<finger_manipulation::srv::SetOperatingMode>(
             "/set_operating_mode",
-            std::bind(&ReadWriteNode::setOperatingModeCallback, this, _1, _2));
+            std::bind(&finger_driver::setOperatingModeCallback, this, _1, _2));
         
         // Create subscribers
         set_position_sub_ = this->create_subscription<finger_manipulation::msg::SetPosition>(
             "/set_position", 10,
-            std::bind(&ReadWriteNode::setPositionCallback, this, _1));
+            std::bind(&finger_driver::setPositionCallback, this, _1));
 
         set_current_sub_ = this->create_subscription<finger_manipulation::msg::SetCurrent>(
             "/set_current", 10,
-            std::bind(&ReadWriteNode::setCurrentCallback, this, _1));
+            std::bind(&finger_driver::setCurrentCallback, this, _1));
     }
 
-    ~ReadWriteNode() {
+    ~finger_driver() {
         portHandler->closePort();
     }
 
@@ -112,7 +112,17 @@ private:
             portHandler, id, ADDR_TORQUE_ENABLE, 1, &dxl_error);
 
         if (dxl_comm_result != COMM_SUCCESS) {
-            RCLCPP_ERROR(this->get_logger(), "Failed to enable torque for Dynamixel ID %d", id);
+            RCLCPP_ERROR(this->get_logger(), "Failed to enable torque for ID %d -- Result: %d", id, dxl_error);
+        }
+    }
+
+    void disableTorque(uint8_t id) {
+        uint8_t dxl_error = 0;
+        int dxl_comm_result = packetHandler->write1ByteTxRx(
+            portHandler, id, ADDR_TORQUE_ENABLE, 0, &dxl_error);
+
+        if (dxl_comm_result != COMM_SUCCESS) {
+            RCLCPP_ERROR(this->get_logger(), "Failed to disable torque for ID %d -- Result: %d", id, dxl_error);
         }
     }
 
@@ -148,9 +158,11 @@ private:
             return;
         }
 
-        for (uint8_t ID = 1; ID < 4; ID++) {
-        dxl_comm_result = packetHandler->write1ByteTxOnly(
-            portHandler, ID, ADDR_OPERATING_MODE, (uint8_t)request->opmode);
+        for (uint8_t ID = 1; ID <= 4; ID++) {
+            disableTorque(ID);
+            dxl_comm_result = packetHandler->write1ByteTxRx(
+                portHandler, ID, ADDR_OPERATING_MODE, (uint8_t)request->opmode);
+            enableTorque(ID);
         }
 
         (void) response;
@@ -227,7 +239,7 @@ private:
 
 int main(int argc, char **argv) {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<ReadWriteNode>();
+    auto node = std::make_shared<finger_driver>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

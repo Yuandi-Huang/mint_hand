@@ -3,7 +3,7 @@
         <description>Finger Manipulation RQt Plugin</description>
         <qtgui>
             <group>
-              <label>Visualization</label>
+              <label>Miscellaneous Tools</label>
             </group>
             <label>finger_manipulation</label>
             <icon type="theme">applications-science</icon>
