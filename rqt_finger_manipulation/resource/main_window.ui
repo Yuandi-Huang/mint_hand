@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>230</width>
-    <height>895</height>
+    <height>930</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,7 +25,7 @@
   <property name="maximumSize">
    <size>
     <width>230</width>
-    <height>895</height>
+    <height>930</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -47,7 +47,7 @@
    <property name="maximumSize">
     <size>
      <width>230</width>
-     <height>895</height>
+     <height>930</height>
     </size>
    </property>
    <widget class="QScrollBar" name="PIP_scrollbar">
@@ -66,7 +66,7 @@
    <widget class="QPushButton" name="set_default_button">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>30</x>
       <y>850</y>
       <width>80</width>
       <height>23</height>
@@ -100,7 +100,7 @@
      <rect>
       <x>20</x>
       <y>250</y>
-      <width>161</width>
+      <width>121</width>
       <height>31</height>
      </rect>
     </property>
@@ -119,7 +119,7 @@
      <bool>false</bool>
     </property>
     <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="text">
      <string>PIP (ID: 3)</string>
@@ -168,16 +168,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Encoder Reading:</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="Line" name="right_bounding_line">
@@ -245,16 +245,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Current (mA):</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLineEdit" name="PIP_current_textbox">
@@ -291,16 +291,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Temperature (C):</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLineEdit" name="PIP_temperature_textbox">
@@ -337,16 +337,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Goal Position:</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLineEdit" name="PIP_goalpos_textbox">
@@ -458,7 +458,7 @@
      <bool>false</bool>
     </property>
     <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="text">
      <string>INDEX FINGER</string>
@@ -498,16 +498,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Current (mA):</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="DIP_goalpos_label">
@@ -525,16 +525,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Goal Position:</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLineEdit" name="DIP_goalpos_textbox">
@@ -568,16 +568,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Encoder Reading:</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="DIP_temperature_label">
@@ -595,16 +595,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Temperature (C):</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="Line" name="DIP_midline">
@@ -731,7 +731,7 @@
      <rect>
       <x>20</x>
       <y>50</y>
-      <width>161</width>
+      <width>121</width>
       <height>31</height>
      </rect>
     </property>
@@ -750,7 +750,7 @@
      <bool>false</bool>
     </property>
     <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="text">
      <string>DIP (ID: 4)</string>
@@ -809,16 +809,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Current (mA):</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="MCP_goalpos_label">
@@ -836,16 +836,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Goal Position:</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLineEdit" name="MCP_goalpos_textbox">
@@ -879,16 +879,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Encoder Reading:</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="Line" name="separation_line5">
@@ -933,16 +933,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Temperature (C):</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="Line" name="MCP_midline">
@@ -1012,7 +1012,7 @@
      <rect>
       <x>20</x>
       <y>450</y>
-      <width>161</width>
+      <width>121</width>
       <height>31</height>
      </rect>
     </property>
@@ -1031,7 +1031,7 @@
      <bool>false</bool>
     </property>
     <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="text">
      <string>MCP (ID: 2)</string>
@@ -1113,7 +1113,7 @@
    <widget class="QLineEdit" name="ABD_current_textbox">
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>150</x>
       <y>760</y>
       <width>41</width>
       <height>23</height>
@@ -1132,7 +1132,7 @@
    <widget class="QLineEdit" name="ABD_temperature_textbox">
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>150</x>
       <y>790</y>
       <width>41</width>
       <height>23</height>
@@ -1151,7 +1151,7 @@
    <widget class="QLabel" name="ABD_temperature_label">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>30</x>
       <y>790</y>
       <width>111</width>
       <height>20</height>
@@ -1163,16 +1163,16 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Temperature (C):</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="ABD_label">
@@ -1180,7 +1180,7 @@
      <rect>
       <x>20</x>
       <y>650</y>
-      <width>191</width>
+      <width>151</width>
       <height>31</height>
      </rect>
     </property>
@@ -1199,7 +1199,7 @@
      <bool>false</bool>
     </property>
     <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="text">
      <string>ABD (ID: 1)</string>
@@ -1214,7 +1214,7 @@
    <widget class="QLabel" name="ABD_encoder_label">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>30</x>
       <y>730</y>
       <width>111</width>
       <height>20</height>
@@ -1226,22 +1226,22 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Encoder Reading:</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="ABD_current_label">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>30</x>
       <y>760</y>
       <width>111</width>
       <height>20</height>
@@ -1253,22 +1253,22 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Current (mA):</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLabel" name="ABD_goalpos_label">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>30</x>
       <y>690</y>
       <width>111</width>
       <height>20</height>
@@ -1280,22 +1280,22 @@
      </font>
     </property>
     <property name="frameShape">
-     <enum>QFrame::Panel</enum>
+     <enum>QFrame::Box</enum>
     </property>
     <property name="frameShadow">
-     <enum>QFrame::Plain</enum>
+     <enum>QFrame::Sunken</enum>
     </property>
     <property name="text">
      <string>Goal Position:</string>
     </property>
     <property name="alignment">
-     <set>Qt::AlignCenter</set>
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QLineEdit" name="ABD_goalpos_textbox">
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>150</x>
       <y>690</y>
       <width>41</width>
       <height>23</height>
@@ -1314,7 +1314,7 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>170</x>
+      <x>150</x>
       <y>730</y>
       <width>41</width>
       <height>23</height>
@@ -1328,6 +1328,124 @@
     </property>
     <property name="readOnly">
      <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="DIP_enabled_label">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>55</y>
+      <width>31</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 74, 74);
+</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="PIP_enabled_label">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>255</y>
+      <width>31</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 74, 74);
+</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="MCP_enabled_label">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>455</y>
+      <width>31</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 74, 74);
+</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="ABD_enabled_label">
+    <property name="geometry">
+     <rect>
+      <x>180</x>
+      <y>655</y>
+      <width>31</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(255, 74, 74);
+</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="torque_enable_button">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>880</y>
+      <width>80</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Torque On</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="torque_disable_button">
+    <property name="geometry">
+     <rect>
+      <x>120</x>
+      <y>880</y>
+      <width>80</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Torque Off</string>
     </property>
    </widget>
   </widget>

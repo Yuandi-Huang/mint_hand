@@ -3,13 +3,29 @@ from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy
 from rqt_gui.main import Main
 from rqt_gui_py.plugin import Plugin
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtCore import QTimer
+from PyQt5.QtWidgets import QMainWindow, QScrollBar, QLineEdit
 from PyQt5.QtGui import QIntValidator
 
 import finger_manipulation.srv
 import finger_manipulation.msg
 from rqt_finger_manipulation.main_window import main_window
+
 import sys
+import asyncio
+
+NUM_MOTORS = 4
+
+# Dictionary mapping motor IDs to joint names
+motorIDs = {
+    1 : "ABD",
+    2 : "MCP",
+    3 : "PIP",
+    4 : "DIP"
+}
+
+# Reverse dictionary for joint names to motor IDs
+motorNames = {v: k for k, v in motorIDs.items()}
 
 class ControlNode(Node):
     def __init__(self):
@@ -24,14 +40,21 @@ class ControlNode(Node):
         self.temperature_request = finger_manipulation.srv.GetTemperature.Request()
         self.position_request = finger_manipulation.srv.GetPosition.Request()
         self.position_message = finger_manipulation.msg.SetPosition()
+    
+    async def getTemperature(self, id):
+        """
+        for all service callers:
+            creates a coroutine to later run as a task
 
-    def getTemperature(self, id):
+        :param id: motor ID to query
+        :return: coroutine which initializes future
+        """ 
         self.temperature_request.id = id
-        return self.temperature_client.call_async(self.temperature_request)
+        self.temperature_client.call_async(self.temperature_request)
 
-    def getPosition(self, id):
+    async def getPosition(self, id):
         self.position_request.id = id
-        return self.position_client.call_async(self.position_request)
+        self.position_client.call_async(self.position_request)
     
     def setPosition(self, id, position):
         self.position_message.id = id
@@ -57,29 +80,76 @@ class RqtPlugin(Plugin):
         self.ui.setupUi(self._widget)
         context.add_widget(self._widget)
 
-        self.ui.DIP_scrollbar.valueChanged.connect(lambda value: self.setPosition(id = 4, position = self.convertEncoderPosition(value)))
-        self.ui.PIP_scrollbar.valueChanged.connect(lambda value: self.setPosition(id = 3, position = self.convertEncoderPosition(value)))
-        self.ui.MCP_scrollbar.valueChanged.connect(lambda value: self.setPosition(id = 2, position = self.convertEncoderPosition(value)))
-        self.ui.ABD_scrollbar.valueChanged.connect(lambda value: self.setPosition(id = 1, position = self.convertEncoderPosition(value)))
+        goalpos_validator = QIntValidator(0, 4096) # Ensure goalpos only accepts integers
+        self.motor_widgets = {} # Dictionary mapping motor IDs to UI elements
 
-        encoder_validator = QIntValidator(0, 4096) # Ensure text box only accepts integers
-        self.ui.DIP_goalpos_textbox.setValidator(encoder_validator)
-        self.ui.PIP_goalpos_textbox.setValidator(encoder_validator)
-        self.ui.MCP_goalpos_textbox.setValidator(encoder_validator)
-        self.ui.ABD_goalpos_textbox.setValidator(encoder_validator)
+        for ID in range(1, NUM_MOTORS + 1):
+            self.motor_widgets[ID] = {
+                "scrollbar": getattr(self.ui, f"{motorIDs[ID]}_scrollbar"),                      # Scrollbar for position control
+                "goalpos_textbox": getattr(self.ui, f"{motorIDs[ID]}_goalpos_textbox"),          # Textbox for goal position
+                "encoder_textbox": getattr(self.ui, f"{motorIDs[ID]}_encoder_textbox"),          # Textbox for present encoder position
+                "current_textbox": getattr(self.ui, f"{motorIDs[ID]}_current_textbox"),          # Textbox for present current
+                "temperature_textbox": getattr(self.ui, f"{motorIDs[ID]}_temperature_textbox"),  # Textbox for present temperature
+            }
 
-        self.ui.DIP_goalpos_textbox.returnPressed.connect(lambda : self.setPosition(id = 1, position = self.ui.DIP_goalpos_textbox.text()))
-        self.ui.PIP_goalpos_textbox.returnPressed.connect(lambda : self.setPosition(id = 1, position = self.ui.DIP_goalpos_textbox.text()))
-        self.ui.MCP_goalpos_textbox.returnPressed.connect(lambda : self.setPosition(id = 1, position = self.ui.DIP_goalpos_textbox.text()))
-        self.ui.ABD_goalpos_textbox.returnPressed.connect(lambda : self.setPosition(id = 1, position = self.ui.DIP_goalpos_textbox.text()))
+            # Attach functions to each UI element
+            self.motor_widgets[ID]["scrollbar"].valueChanged.connect(
+                lambda value, ID = ID: self.setPositionScrollbar(
+                    id = ID, 
+                    position = self.convertEncoderPosition(value), 
+                    textbox = self.motor_widgets[ID]["goalpos_textbox"]
+                )
+            )
+
+            self.motor_widgets[ID]["goalpos_textbox"].setValidator(goalpos_validator)
+
+            self.motor_widgets[ID]["goalpos_textbox"].returnPressed.connect(
+                lambda ID = ID: self.setPositionTextbox(
+                    id = ID, 
+                    position = self.motor_widgets[ID]["goalpos_textbox"].text(), 
+                    scrollbar = self.motor_widgets[ID]["scrollbar"]
+                )
+            )
+
+            self.motor_widgets[ID]["scrollbar"].valueChanged.connect(
+                lambda value, ID = ID: self.setPositionScrollbar(
+                    id = ID, 
+                    position = self.convertEncoderPosition(value), 
+                    textbox = self.motor_widgets[ID]["goalpos_textbox"]
+                )
+            )
+
+        self.timer = QTimer(self)
+        self.timer.setSingleShot(False)
+        self.timer.setInterval(1000) # Display is updated every second
+        self.timer.timeout.connect(lambda : asyncio.run(self.update())) 
+        self.timer.start() 
+
+    async def update(self): # Call position, current and temperature services to update display
+        for ID in range(1, NUM_MOTORS + 1):
+            positionTask = asyncio.create_task(self.controlNode.getPosition(id = ID))
+            temperatureTask = asyncio.create_task(self.controlNode.getTemperature(id = ID))
+
+            position = await positionTask
+            temperature = await temperatureTask
+            
+            # TODO: self.motor_widgets[ID]["current_textbox"].setText(str(position))
+            self.motor_widgets[ID]["encoder_textbox"].setText(str(position))
+            self.motor_widgets[ID]["temperature_textbox"].setText(str(temperature))
 
     def convertEncoderPosition(self, percent):
         min = 0
         max = 4096
-        return int(percent / 100 * max + min)
-
-    def setPosition(self, id, position):
+        return int((percent / 100) * max + min)
+    
+    def setPositionTextbox(self, id, position, scrollbar):
         if not position: position = 0
+        scrollbar.setValue(int(int(position) / 4096 * 100))
+        self.controlNode.setPosition(id = id, position = int(position))
+
+    def setPositionScrollbar(self, id, position, textbox):
+        if not position: position = 0
+        textbox.setText(str(position))
         self.controlNode.setPosition(id = id, position = int(position))
 
 def main():

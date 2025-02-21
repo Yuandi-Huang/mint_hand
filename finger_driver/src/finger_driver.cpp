@@ -146,6 +146,26 @@ private:
         }
     }
 
+    void getPresentTemperatureCallback(
+        const std::shared_ptr<finger_manipulation::srv::GetTemperature::Request> request,
+        std::shared_ptr<finger_manipulation::srv::GetTemperature::Response> response) {
+
+        uint8_t dxl_error = 0;
+        int dxl_comm_result = COMM_TX_FAIL;
+        int8_t temperature = 0;
+
+        dxl_comm_result = packetHandler->read1ByteTxRx(
+            portHandler, (uint8_t)request->id, ADDR_PRESENT_TEMP, 
+            (uint8_t *)&temperature, &dxl_error);
+
+        if (dxl_comm_result == COMM_SUCCESS) {
+            RCLCPP_INFO(this->get_logger(), "getTemperature : [ID:%d] -> [TEMPERATURE:%d]", request->id, temperature);
+            response->temperature = temperature;
+        } else {
+            RCLCPP_ERROR(this->get_logger(), "Failed to get temperature! Result: %d", dxl_comm_result);
+        }
+    }
+
     void setOperatingModeCallback(
         const std::shared_ptr<finger_manipulation::srv::SetOperatingMode::Request> request,
         std::shared_ptr<finger_manipulation::srv::SetOperatingMode::Response> response) {
@@ -171,26 +191,6 @@ private:
             operatingMode = static_cast<OperatingMode>(request->opmode);
         } else {
             RCLCPP_ERROR(this->get_logger(), "Failed to set operating mode! Result: %d", dxl_comm_result);
-        }
-    }
-
-    void getPresentTemperatureCallback(
-        const std::shared_ptr<finger_manipulation::srv::GetTemperature::Request> request,
-        std::shared_ptr<finger_manipulation::srv::GetTemperature::Response> response) {
-
-        uint8_t dxl_error = 0;
-        int dxl_comm_result = COMM_TX_FAIL;
-        int8_t temperature = 0;
-
-        dxl_comm_result = packetHandler->read1ByteTxRx(
-            portHandler, (uint8_t)request->id, ADDR_PRESENT_TEMP, 
-            (uint8_t *)&temperature, &dxl_error);
-
-        if (dxl_comm_result == COMM_SUCCESS) {
-            RCLCPP_INFO(this->get_logger(), "getTemperature : [ID:%d] -> [TEMPERATURE:%d]", request->id, temperature);
-            response->temperature = temperature;
-        } else {
-            RCLCPP_ERROR(this->get_logger(), "Failed to get temperature! Result: %d", dxl_comm_result);
         }
     }
 
