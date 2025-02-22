@@ -13,14 +13,19 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(rosidl_default_runtime REQUIRED)
 
 set(msg_files
-  "msg/SetPosition.msg"
-  "msg/SetCurrent.msg"
+  "msg/GoalPosition.msg"
+  "msg/GoalCurrent.msg"
 )
 
 set(srv_files
+  "srv/GetCurrent.srv"
   "srv/GetPosition.srv"
+  "srv/GetPositionLimits.srv"
   "srv/GetTemperature.srv"
   "srv/SetOperatingMode.srv"
+  "srv/TorqueEnable.srv"
+  "srv/TorqueDisable.srv"
+  "srv/GetEnabledStatus.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -32,6 +37,10 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 ament_export_dependencies(rosidl_default_runtime rclcpp std_msgs dynamixel_sdk)
 
 add_executable(finger_driver src/finger_driver.cpp)
+target_include_directories(finger_driver PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
 target_link_libraries(finger_driver
   finger_manipulation__rosidl_typesupport_cpp
 )

@@ -4,7 +4,7 @@ from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy
 from rqt_gui.main import Main
 from rqt_gui_py.plugin import Plugin
 from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QMainWindow, QScrollBar, QLineEdit
+from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtGui import QIntValidator
 
 import finger_manipulation.srv
@@ -32,14 +32,14 @@ class ControlNode(Node):
         super().__init__('rqt_finger_manipulation')
         self.temperature_client = self.create_client(finger_manipulation.srv.GetTemperature, '/get_temperature')
         self.position_client = self.create_client(finger_manipulation.srv.GetPosition, '/get_position')
-        self.position_publisher = self.create_publisher(finger_manipulation.msg.SetPosition, '/set_position', self.qos_profile)
+        self.position_publisher = self.create_publisher(finger_manipulation.msg.GoalPosition, '/goal_position', self.qos_profile)
 
         while not self.position_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('service not available, waiting again...')
 
         self.temperature_request = finger_manipulation.srv.GetTemperature.Request()
         self.position_request = finger_manipulation.srv.GetPosition.Request()
-        self.position_message = finger_manipulation.msg.SetPosition()
+        self.position_message = finger_manipulation.msg.GoalPosition()
     
     async def getTemperature(self, id):
         """

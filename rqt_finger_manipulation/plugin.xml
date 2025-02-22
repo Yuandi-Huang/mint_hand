@@ -5,9 +5,9 @@
             <group>
               <label>Miscellaneous Tools</label>
             </group>
-            <label>finger_manipulation</label>
+            <label>Finger Control GUI</label>
             <icon type="theme">applications-science</icon>
-            <statustip>finger_manipulation</statustip>
+            <statustip>Finger Control GUI</statustip>
         </qtgui>
     </class>
 </library>

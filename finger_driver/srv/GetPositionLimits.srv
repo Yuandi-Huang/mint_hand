@@ -1,0 +1,4 @@
+uint8 id
+---
+int32 max_position
+int32 min_position
