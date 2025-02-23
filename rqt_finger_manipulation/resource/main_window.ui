@@ -59,6 +59,12 @@
       <height>171</height>
      </rect>
     </property>
+    <property name="maximum">
+     <number>999</number>
+    </property>
+    <property name="pageStep">
+     <number>100</number>
+    </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
     </property>
@@ -73,10 +79,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>Set Zero</string>
+     <string>Set Default</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="reset_button">
+   <widget class="QPushButton" name="reset_pose_button">
     <property name="geometry">
      <rect>
       <x>120</x>
@@ -92,7 +98,7 @@
      </sizepolicy>
     </property>
     <property name="text">
-     <string>Reset</string>
+     <string>Reset Pose</string>
     </property>
    </widget>
    <widget class="QLabel" name="PIP_label">
@@ -225,6 +231,12 @@
       <width>191</width>
       <height>16</height>
      </rect>
+    </property>
+    <property name="maximum">
+     <number>999</number>
+    </property>
+    <property name="pageStep">
+     <number>100</number>
     </property>
     <property name="orientation">
      <enum>Qt::Horizontal</enum>
@@ -359,7 +371,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>-</string>
+     <string/>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -438,16 +450,16 @@
    <widget class="QLabel" name="INDEX_label">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>60</x>
       <y>10</y>
-      <width>211</width>
+      <width>111</width>
       <height>31</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <family>Serif</family>
-      <pointsize>14</pointsize>
+      <family>Ubuntu Sans Mono</family>
+      <pointsize>16</pointsize>
       <weight>75</weight>
       <bold>true</bold>
       <underline>false</underline>
@@ -461,7 +473,7 @@
      <enum>QFrame::Box</enum>
     </property>
     <property name="text">
-     <string>INDEX FINGER</string>
+     <string>INDEX</string>
     </property>
     <property name="textFormat">
      <enum>Qt::AutoText</enum>
@@ -478,6 +490,12 @@
       <width>16</width>
       <height>171</height>
      </rect>
+    </property>
+    <property name="maximum">
+     <number>999</number>
+    </property>
+    <property name="pageStep">
+     <number>100</number>
     </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
@@ -547,7 +565,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>-</string>
+     <string/>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -790,6 +808,12 @@
       <height>171</height>
      </rect>
     </property>
+    <property name="maximum">
+     <number>999</number>
+    </property>
+    <property name="pageStep">
+     <number>100</number>
+    </property>
     <property name="orientation">
      <enum>Qt::Vertical</enum>
     </property>
@@ -858,7 +882,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>-</string>
+     <string/>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>
@@ -1302,7 +1326,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>-</string>
+     <string/>
     </property>
     <property name="alignment">
      <set>Qt::AlignCenter</set>

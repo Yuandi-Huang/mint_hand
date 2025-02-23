@@ -22,10 +22,9 @@ set(srv_files
   "srv/GetPosition.srv"
   "srv/GetPositionLimits.srv"
   "srv/GetTemperature.srv"
+  "srv/GetTorqueEnabled.srv"
   "srv/SetOperatingMode.srv"
-  "srv/TorqueEnable.srv"
-  "srv/TorqueDisable.srv"
-  "srv/GetEnabledStatus.srv"
+  "srv/SetTorqueEnabled.srv"
 )
 
 rosidl_generate_interfaces(${PROJECT_NAME}

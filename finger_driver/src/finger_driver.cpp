@@ -7,7 +7,7 @@ using namespace dynamixel;
 using std::placeholders::_1;
 using std::placeholders::_2;
 
-// Control table address
+// Control table addresses
 #define ADDR_OPERATING_MODE   11
 #define ADDR_MIN_POSITION     48
 #define ADDR_MAX_POSITION     52
@@ -51,17 +51,13 @@ public:
         // }
        
         // Create services
-        torque_enable_srv = this->create_service<finger_manipulation::srv::TorqueEnable>(
-            "/enable_torque",
-            std::bind(&finger_driver::torqueEnable, this, _1, _2));
-            
-        torque_disable_srv = this->create_service<finger_manipulation::srv::TorqueDisable>(
-            "/disable_torque",
-            std::bind(&finger_driver::torqueDisable, this, _1, _2));
+        set_torque_enabled_srv = this->create_service<finger_manipulation::srv::SetTorqueEnabled>(
+            "/set_torque_enabled",
+            std::bind(&finger_driver::setTorqueEnabledCallback, this, _1, _2));
 
-        get_enabled_status_srv = this->create_service<finger_manipulation::srv::GetEnabledStatus>(
-            "/get_enabled_status",
-            std::bind(&finger_driver::getEnabledStatusCallback, this, _1, _2));
+        get_torque_enabled_srv = this->create_service<finger_manipulation::srv::GetTorqueEnabled>(
+            "/get_torque_enabled",
+            std::bind(&finger_driver::getTorqueEnabledCallback, this, _1, _2));
 
         get_position_srv = this->create_service<finger_manipulation::srv::GetPosition>(
             "/get_position",
@@ -98,9 +94,8 @@ public:
     }
 
 private:
-    rclcpp::Service<finger_manipulation::srv::TorqueEnable>::SharedPtr torque_enable_srv;
-    rclcpp::Service<finger_manipulation::srv::TorqueDisable>::SharedPtr torque_disable_srv;
-    rclcpp::Service<finger_manipulation::srv::GetEnabledStatus>::SharedPtr get_enabled_status_srv;
+    rclcpp::Service<finger_manipulation::srv::SetTorqueEnabled>::SharedPtr set_torque_enabled_srv;
+    rclcpp::Service<finger_manipulation::srv::GetTorqueEnabled>::SharedPtr get_torque_enabled_srv;
 
     rclcpp::Service<finger_manipulation::srv::GetCurrent>::SharedPtr get_current_srv;
     rclcpp::Service<finger_manipulation::srv::GetPosition>::SharedPtr get_position_srv;
@@ -114,32 +109,41 @@ private:
     PortHandler * portHandler;
     PacketHandler * packetHandler;
 
-    void torqueEnable(
-        const std::shared_ptr<finger_manipulation::srv::TorqueEnable::Request> request,
-        std::shared_ptr<finger_manipulation::srv::TorqueEnable::Response> response) {
-        uint8_t dxl_error = 0;
-        int dxl_comm_result = packetHandler->write1ByteTxRx(
-            portHandler, request->id, ADDR_TORQUE_ENABLE, 1, &dxl_error);
-        
-        (void) response;
-        if (dxl_comm_result != COMM_SUCCESS) {
-            RCLCPP_ERROR(this->get_logger(), "Failed to enable torque for ID %d -- Result: %d", request->id, dxl_error);
-        }
-    }
+    /**
+     * @brief Handles requests for the set_torque_enabled service.
+     *
+     * This callback is invoked when a request to enable 
+     * or disable torque is received for a specific motor ID.
+     *
+     * @param request Contains the motor ID and desired torque state (enabled/disabled).
+     * @param response Unused.
+     */
+    void setTorqueEnabledCallback(
+        const std::shared_ptr<finger_manipulation::srv::SetTorqueEnabled::Request> request,
+        std::shared_ptr<finger_manipulation::srv::SetTorqueEnabled::Response> response) {
 
-    void torqueDisable(
-        const std::shared_ptr<finger_manipulation::srv::TorqueDisable::Request> request,
-        std::shared_ptr<finger_manipulation::srv::TorqueDisable::Response> response) {
         uint8_t dxl_error = 0;
         int dxl_comm_result = packetHandler->write1ByteTxRx(
-            portHandler, request->id, ADDR_TORQUE_ENABLE, 0, &dxl_error);
+            portHandler, request->id, ADDR_TORQUE_ENABLE, 
+            (uint8_t)request->enabled, &dxl_error);
         
         (void) response;
         if (dxl_comm_result != COMM_SUCCESS) {
-            RCLCPP_ERROR(this->get_logger(), "Failed to disable torque for ID %d -- Result: %d", request->id, dxl_error);
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to set enabled status for ID %d -- Result: %d", 
+                request->id, dxl_error);
         }
     }
     
+    /**
+     * @brief Handles requests for the get_current service.
+     *
+     * This callback is invoked when a request for motor 
+     * current in mA is received for a specific motor ID.
+     *
+     * @param request Contains the motor ID to query.
+     * @param response Contains the present current in mA.
+     */
     void getPresentCurrentCallback(
         const std::shared_ptr<finger_manipulation::srv::GetCurrent::Request> request,
         std::shared_ptr<finger_manipulation::srv::GetCurrent::Response> response) {
@@ -153,15 +157,26 @@ private:
             (uint16_t *)&current, &dxl_error);
 
         if (dxl_comm_result == COMM_SUCCESS) {
-            RCLCPP_INFO(this->get_logger(), "getCurrent : [ID:%d] -> [CURRENT:%d]", 
-                request->id, current);
             response->current = current;
+            RCLCPP_INFO(this->get_logger(), 
+                "getCurrent : [ID:%d] -> [CURRENT:%d]", 
+                request->id, current);
         } else {
-            RCLCPP_ERROR(this->get_logger(), "Failed to get current for ID %d -- Result: %d", 
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to get current for ID %d -- Result: %d", 
                 request->id, dxl_comm_result);
         }
     }
-
+    
+    /**
+     * @brief Handles requests for the get_position service.
+     *
+     * This callback is invoked when a request for motor encoder 
+     * position is received for a specific motor ID.
+     *
+     * @param request Contains the motor ID.
+     * @param response Contains the present raw encoder position.
+     */
     void getPresentPositionCallback(
         const std::shared_ptr<finger_manipulation::srv::GetPosition::Request> request,
         std::shared_ptr<finger_manipulation::srv::GetPosition::Response> response) {
@@ -175,15 +190,26 @@ private:
             (uint32_t *)&position, &dxl_error);
 
         if (dxl_comm_result == COMM_SUCCESS) {
-            RCLCPP_INFO(this->get_logger(), "getPosition : [ID:%d] -> [POSITION:%d]", 
-                request->id, position);
             response->position = position;
+            RCLCPP_INFO(this->get_logger(), 
+                "getPosition : [ID:%d] -> [POSITION:%d]", 
+                request->id, position);
         } else {
-            RCLCPP_ERROR(this->get_logger(), "Failed to get position for ID %d -- Result: %d", 
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to get position for ID %d -- Result: %d", 
                 request->id, dxl_comm_result);
         }
     }
 
+    /**
+     * @brief Handles requests for the get_position_limits service.
+     *
+     * This callback is invoked when a request for the range of motor
+     * encoder position limits is received for a specific motor ID.
+     *
+     * @param request Contains the motor ID.
+     * @param response Contains the min and max encoder position limits.
+     */
     void getPositionLimitsCallback(
         const std::shared_ptr<finger_manipulation::srv::GetPositionLimits::Request> request,
         std::shared_ptr<finger_manipulation::srv::GetPositionLimits::Response> response) {
@@ -202,16 +228,27 @@ private:
             (uint32_t *)&max, &dxl_error);
 
         if (dxl_comm_result == COMM_SUCCESS) {
-            RCLCPP_INFO(this->get_logger(), "getPositionLimits : [ID:%d] -> [MIN:%d], [MAX:%d]", 
-                request->id, min, max);
             response->min_position = min;
             response->max_position = max;
+            RCLCPP_INFO(this->get_logger(), 
+                "getPositionLimits : [ID:%d] -> [MIN:%d], [MAX:%d]", 
+                request->id, min, max);
         } else {
-            RCLCPP_ERROR(this->get_logger(), "Failed to get position limits for ID %d -- Result: %d", 
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to get position limits for ID %d -- Result: %d", 
                 request->id, dxl_comm_result);
         }
     }
-
+    
+    /**
+     * @brief Handles requests for the get_temperature service.
+     *
+     * This callback is invoked when a request for motor temperature
+     * in Celsius is received for a specific motor ID.
+     *
+     * @param request Contains the motor ID.
+     * @param response Contains the present temperature in Celsius.
+     */
     void getPresentTemperatureCallback(
         const std::shared_ptr<finger_manipulation::srv::GetTemperature::Request> request,
         std::shared_ptr<finger_manipulation::srv::GetTemperature::Response> response) {
@@ -225,15 +262,27 @@ private:
             (uint8_t *)&temperature, &dxl_error);
 
         if (dxl_comm_result == COMM_SUCCESS) {
-            RCLCPP_INFO(this->get_logger(), "getTemperature : [ID:%d] -> [TEMPERATURE:%d]", 
-                request->id, temperature);
             response->temperature = temperature;
+            RCLCPP_INFO(this->get_logger(), 
+                "getTemperature : [ID:%d] -> [TEMPERATURE:%d]", 
+                request->id, temperature);
         } else {
-            RCLCPP_ERROR(this->get_logger(), "Failed to get temperature for ID %d -- Result: %d", 
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to get temperature for ID %d -- Result: %d", 
                 request->id, dxl_comm_result);
         }
     }
-
+    
+    /**
+     * @brief Handles requests for the set_operating_mode service.
+     *
+     * This callback is invoked when a request to set  
+     * operating mode is received for a specific motor ID.
+     *
+     * @param request Contains the motor ID and desired operating mode:
+     *                position, current, or current-based position.
+     * @param response Unused.
+     */
     void setOperatingModeCallback(
         const std::shared_ptr<finger_manipulation::srv::SetOperatingMode::Request> request,
         std::shared_ptr<finger_manipulation::srv::SetOperatingMode::Response> response) {
@@ -254,12 +303,15 @@ private:
             (uint8_t *)&torque_enabled, &dxl_error);
         
         if (torque_enabled == 1) {
-            RCLCPP_ERROR(this->get_logger(), "Cannot set operating mode! ID %d's torque is still enabled", request->id);
+            RCLCPP_ERROR(this->get_logger(), 
+                "Cannot set operating mode! ID %d's torque is still enabled", 
+                request->id);
             return;
         }
         else if (torque_enabled == -1) {
-            RCLCPP_ERROR(this->get_logger(), "Failed to set operating mode for ID %d -- Result: %d", 
-            request->id, dxl_comm_result);
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to set operating mode for ID %d -- Result: %d", 
+                request->id, dxl_comm_result);
             return;
         }
 
@@ -268,16 +320,28 @@ private:
 
         (void) response;
         if (dxl_comm_result == COMM_SUCCESS) {
-            RCLCPP_INFO(this->get_logger(), "Changed ID %d's opmode to %d", request->id, request->opmode);
+            RCLCPP_INFO(this->get_logger(), 
+                "Changed ID %d's opmode to %d", 
+                request->id, request->opmode);
         } else {
-            RCLCPP_ERROR(this->get_logger(), "Failed to set operating mode for ID %d -- Result: %d", 
-            request->id, dxl_comm_result);
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to set operating mode for ID %d -- Result: %d", 
+                request->id, dxl_comm_result);
         }
     }
     
-    void getEnabledStatusCallback(
-        const std::shared_ptr<finger_manipulation::srv::GetEnabledStatus::Request> request,
-        std::shared_ptr<finger_manipulation::srv::GetEnabledStatus::Response> response) {
+    /**
+     * @brief Handles requests for the get_torque_enabled service.
+     *
+     * This callback is invoked when a request for a motor's torque
+     * enabled status is received for a specific motor ID.
+     *
+     * @param request Contains the motor ID.
+     * @param response Contains the motor's torque state (enabled/disabled).
+     */
+    void getTorqueEnabledCallback(
+        const std::shared_ptr<finger_manipulation::srv::GetTorqueEnabled::Request> request,
+        std::shared_ptr<finger_manipulation::srv::GetTorqueEnabled::Response> response) {
 
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
@@ -288,16 +352,28 @@ private:
             (uint8_t *)&torque_enabled, &dxl_error);
 
         if (dxl_comm_result == COMM_SUCCESS) {
-            RCLCPP_INFO(this->get_logger(), "enabledStatus : [ID:%d] -> [ENABLED:%d]", 
-                request->id, torque_enabled);
             response->enabled = torque_enabled;
+            RCLCPP_INFO(this->get_logger(), 
+                "getTorqueEnabled : [ID:%d] -> [ENABLED:%d]", 
+                request->id, torque_enabled);
         } else {
-            RCLCPP_ERROR(this->get_logger(), "Failed to get enabled status for ID %d -- Result: %d", 
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to get enabled status for ID %d -- Result: %d", 
                 request->id, dxl_comm_result);
         }
     }
-
+    
+    /**
+     * @brief Callback function for the goal_position topic.
+     *
+     * This callback is invoked when a new message is received on the
+     * goal_position topic for a specific motor ID. It processes the 
+     * target encoder value and sends the movement command to the motor.
+     *
+     * @param msg Contains the motor ID and target encoder value.
+     */
     void goalPositionCallback(const finger_manipulation::msg::GoalPosition::SharedPtr msg) {
+
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
         uint32_t position = static_cast<unsigned int>(msg->position);
@@ -306,15 +382,27 @@ private:
             portHandler, (uint8_t)msg->id, ADDR_GOAL_POSITION, position, &dxl_error);
 
         if (dxl_comm_result == COMM_SUCCESS) {
-            RCLCPP_INFO(this->get_logger(), "setPosition : [ID:%d] [POSITION:%d]", 
+            RCLCPP_INFO(this->get_logger(), 
+                "setPosition : [ID:%d] [POSITION:%d]", 
                 msg->id, msg->position);
         } else {
-            RCLCPP_ERROR(this->get_logger(), "Failed to set position for ID %d -- Result: %d", 
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to set position for ID %d -- Result: %d", 
                 msg->id, dxl_comm_result);
         }
     }
     
+    /**
+     * @brief Callback function for the goal_current topic.
+     *
+     * This callback is invoked when a new message is received on the
+     * goal_current topic for a specific motor ID. It processes the 
+     * target current value in mA and sends the movement command to the motor.
+     *
+     * @param msg Contains the motor ID and target current in mA.
+     */
     void goalCurrentCallback(const finger_manipulation::msg::GoalCurrent::SharedPtr msg) {
+
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
         uint16_t current = static_cast<unsigned int>(msg->current);
@@ -323,10 +411,12 @@ private:
             portHandler, (uint16_t)msg->id, ADDR_GOAL_POSITION, current, &dxl_error);
 
         if (dxl_comm_result == COMM_SUCCESS) {
-            RCLCPP_INFO(this->get_logger(), "setCurrent : [ID:%d] [CURRENT:%d]", 
+            RCLCPP_INFO(this->get_logger(), 
+                "setCurrent : [ID:%d] [CURRENT:%d]", 
                 msg->id, msg->current);
         } else {
-            RCLCPP_ERROR(this->get_logger(), "Failed to set current for ID %d -- Result: %d", 
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to set current for ID %d -- Result: %d", 
                 msg->id, dxl_comm_result);
         }
     }

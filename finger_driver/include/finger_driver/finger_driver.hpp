@@ -1,9 +1,8 @@
 #ifndef FINGER_DRIVER_HPP
 #define FINGER_DRIVER_HPP
 
-#include "finger_manipulation/srv/torque_enable.hpp"
-#include "finger_manipulation/srv/torque_disable.hpp"
-#include "finger_manipulation/srv/get_enabled_status.hpp"
+#include "finger_manipulation/srv/set_torque_enabled.hpp"
+#include "finger_manipulation/srv/get_torque_enabled.hpp"
 
 #include "finger_manipulation/srv/get_current.hpp"
 #include "finger_manipulation/srv/get_position.hpp"
