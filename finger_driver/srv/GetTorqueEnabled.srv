@@ -1,3 +1,4 @@
 uint8 id
 ---
 bool enabled
+bool disconnected

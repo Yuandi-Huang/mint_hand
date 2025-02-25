@@ -9,8 +9,8 @@ using std::placeholders::_2;
 
 // Control table addresses
 #define ADDR_OPERATING_MODE   11
-#define ADDR_MIN_POSITION     48
-#define ADDR_MAX_POSITION     52
+#define ADDR_MAX_POSITION     48
+#define ADDR_MIN_POSITION     52
 #define ADDR_TORQUE_ENABLE    64
 #define ADDR_GOAL_CURRENT     102
 #define ADDR_GOAL_POSITION    116
@@ -22,7 +22,7 @@ using std::placeholders::_2;
 #define PROTOCOL_VERSION      2.0 
 
 // Default setting
-#define BAUDRATE              57600
+#define BAUDRATE              4000000
 #define DEVICE_NAME           "/dev/ttyUSB0"
 
 enum class OperatingMode : uint8_t {
@@ -38,17 +38,17 @@ public:
         portHandler = PortHandler::getPortHandler(DEVICE_NAME);
         packetHandler = PacketHandler::getPacketHandler(PROTOCOL_VERSION);
 
-        // if (!portHandler->openPort()) {
-        //     RCLCPP_ERROR(this->get_logger(), "Failed to open the port!");
-        //     rclcpp::shutdown();
-        //     return;
-        // }
+        if (!portHandler->openPort()) {
+            RCLCPP_ERROR(this->get_logger(), "Failed to open the port!");
+            rclcpp::shutdown();
+            return;
+        }
 
-        // if (!portHandler->setBaudRate(BAUDRATE)) {
-        //     RCLCPP_ERROR(this->get_logger(), "Failed to set the baudrate!");
-        //     rclcpp::shutdown();
-        //     return;
-        // }
+        if (!portHandler->setBaudRate(BAUDRATE)) {
+            RCLCPP_ERROR(this->get_logger(), "Failed to set the baudrate!");
+            rclcpp::shutdown();
+            return;
+        }
        
         // Create services
         set_torque_enabled_srv = this->create_service<finger_manipulation::srv::SetTorqueEnabled>(
@@ -128,7 +128,11 @@ private:
             (uint8_t)request->enabled, &dxl_error);
         
         (void) response;
-        if (dxl_comm_result != COMM_SUCCESS) {
+        if (dxl_comm_result == COMM_SUCCESS) {
+            RCLCPP_INFO(this->get_logger(), 
+                "setTorqueEnabled: Changed ID %d's enabled setting to %d", 
+                request->id, request->enabled);
+        } else {
             RCLCPP_ERROR(this->get_logger(), 
                 "Failed to set enabled status for ID %d -- Result: %d", 
                 request->id, dxl_error);
@@ -297,7 +301,7 @@ private:
         }
 
         // Check if torque is disabled
-        int torque_enabled = -1;
+        uint8_t torque_enabled = 2;
         dxl_comm_result = packetHandler->read1ByteTxRx(
             portHandler, (uint8_t)request->id, ADDR_TORQUE_ENABLE, 
             (uint8_t *)&torque_enabled, &dxl_error);
@@ -308,7 +312,7 @@ private:
                 request->id);
             return;
         }
-        else if (torque_enabled == -1) {
+        else if (torque_enabled == 2) {
             RCLCPP_ERROR(this->get_logger(), 
                 "Failed to set operating mode for ID %d -- Result: %d", 
                 request->id, dxl_comm_result);
@@ -357,6 +361,7 @@ private:
                 "getTorqueEnabled : [ID:%d] -> [ENABLED:%d]", 
                 request->id, torque_enabled);
         } else {
+            response->disconnected = true;
             RCLCPP_ERROR(this->get_logger(), 
                 "Failed to get enabled status for ID %d -- Result: %d", 
                 request->id, dxl_comm_result);
@@ -408,7 +413,7 @@ private:
         uint16_t current = static_cast<unsigned int>(msg->current);
 
         dxl_comm_result = packetHandler->write2ByteTxRx(
-            portHandler, (uint16_t)msg->id, ADDR_GOAL_POSITION, current, &dxl_error);
+            portHandler, (uint16_t)msg->id, ADDR_GOAL_CURRENT, current, &dxl_error);
 
         if (dxl_comm_result == COMM_SUCCESS) {
             RCLCPP_INFO(this->get_logger(), 
