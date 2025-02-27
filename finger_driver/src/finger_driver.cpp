@@ -66,7 +66,11 @@ public:
         get_position_limits_srv = this->create_service<finger_manipulation::srv::GetPositionLimits>(
             "/get_position_limits",
             std::bind(&finger_driver::getPositionLimitsCallback, this, _1, _2));
-
+        
+        set_position_limits_srv = this->create_service<finger_manipulation::srv::SetPositionLimits>(
+            "/set_position_limits",
+            std::bind(&finger_driver::setPositionLimitsCallback, this, _1, _2));
+        
         get_current_srv = this->create_service<finger_manipulation::srv::GetCurrent>(
             "/get_current",
             std::bind(&finger_driver::getPresentCurrentCallback, this, _1, _2));
@@ -100,6 +104,7 @@ private:
     rclcpp::Service<finger_manipulation::srv::GetCurrent>::SharedPtr get_current_srv;
     rclcpp::Service<finger_manipulation::srv::GetPosition>::SharedPtr get_position_srv;
     rclcpp::Service<finger_manipulation::srv::GetPositionLimits>::SharedPtr get_position_limits_srv;
+    rclcpp::Service<finger_manipulation::srv::SetPositionLimits>::SharedPtr set_position_limits_srv;
     rclcpp::Service<finger_manipulation::srv::GetTemperature>::SharedPtr get_temperature_srv;
     rclcpp::Service<finger_manipulation::srv::SetOperatingMode>::SharedPtr set_operating_mode_srv;
 
@@ -240,6 +245,42 @@ private:
         } else {
             RCLCPP_ERROR(this->get_logger(), 
                 "Failed to get position limits for ID %d -- Result: %d", 
+                request->id, dxl_comm_result);
+        }
+    }
+
+    /**
+     * @brief Handles requests for the set_position_limits service.
+     *
+     * This callback is invoked when a request to set the range of motor
+     * encoder position limits is received for a specific motor ID.
+     *
+     * @param request Contains the motor ID, plus min and max encoder position limits.
+     * @param response Unused.
+     */
+    void setPositionLimitsCallback(
+        const std::shared_ptr<finger_manipulation::srv::SetPositionLimits::Request> request,
+        std::shared_ptr<finger_manipulation::srv::SetPositionLimits::Response> response) {
+
+        uint8_t dxl_error = 0;
+        int dxl_comm_result = COMM_TX_FAIL;
+
+        dxl_comm_result = packetHandler->write4ByteTxRx(
+            portHandler, (uint8_t)request->id, ADDR_MIN_POSITION, 
+            (uint32_t)request->min_position, &dxl_error);
+
+        dxl_comm_result = packetHandler->write4ByteTxRx(
+            portHandler, (uint8_t)request->id, ADDR_MAX_POSITION, 
+            (uint32_t)request->max_position, &dxl_error);
+
+        (void) response;
+        if (dxl_comm_result == COMM_SUCCESS) {
+            RCLCPP_INFO(this->get_logger(), 
+                "setPositionLimits : [ID:%d] -> [MIN:%d], [MAX:%d]", 
+                request->id, request->min_position, request->max_position);
+        } else {
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to set position limits for ID %d -- Result: %d", 
                 request->id, dxl_comm_result);
         }
     }

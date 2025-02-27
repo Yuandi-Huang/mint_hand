@@ -21,6 +21,7 @@ set(srv_files
   "srv/GetCurrent.srv"
   "srv/GetPosition.srv"
   "srv/GetPositionLimits.srv"
+  "srv/SetPositionLimits.srv"
   "srv/GetTemperature.srv"
   "srv/GetTorqueEnabled.srv"
   "srv/SetOperatingMode.srv"

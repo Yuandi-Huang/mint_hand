@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>230</width>
-    <height>930</height>
+    <width>433</width>
+    <height>887</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -24,8 +24,8 @@
   </property>
   <property name="maximumSize">
    <size>
-    <width>230</width>
-    <height>930</height>
+    <width>600</width>
+    <height>1000</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -46,17 +46,17 @@
    </property>
    <property name="maximumSize">
     <size>
-     <width>230</width>
-     <height>930</height>
+     <width>600</width>
+     <height>1000</height>
     </size>
    </property>
    <widget class="QScrollBar" name="PIP_scrollbar">
     <property name="geometry">
      <rect>
       <x>190</x>
-      <y>249</y>
+      <y>289</y>
       <width>16</width>
-      <height>171</height>
+      <height>131</height>
      </rect>
     </property>
     <property name="maximum">
@@ -69,26 +69,26 @@
      <enum>Qt::Vertical</enum>
     </property>
    </widget>
-   <widget class="QPushButton" name="set_default_button">
+   <widget class="QPushButton" name="set_pose_button">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>850</y>
+      <x>240</x>
+      <y>372</y>
       <width>80</width>
-      <height>23</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>Set Default</string>
+     <string>Set Pose</string>
     </property>
    </widget>
    <widget class="QPushButton" name="reset_pose_button">
     <property name="geometry">
      <rect>
-      <x>120</x>
-      <y>850</y>
+      <x>330</x>
+      <y>372</y>
       <width>80</width>
-      <height>23</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -486,9 +486,9 @@
     <property name="geometry">
      <rect>
       <x>190</x>
-      <y>49</y>
+      <y>89</y>
       <width>16</width>
-      <height>171</height>
+      <height>131</height>
      </rect>
     </property>
     <property name="maximum">
@@ -803,9 +803,9 @@
     <property name="geometry">
      <rect>
       <x>190</x>
-      <y>449</y>
+      <y>489</y>
       <width>16</width>
-      <height>171</height>
+      <height>131</height>
      </rect>
     </property>
     <property name="maximum">
@@ -1137,7 +1137,7 @@
    <widget class="QLineEdit" name="ABD_current_textbox">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>160</x>
       <y>760</y>
       <width>41</width>
       <height>23</height>
@@ -1156,7 +1156,7 @@
    <widget class="QLineEdit" name="ABD_temperature_textbox">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>160</x>
       <y>790</y>
       <width>41</width>
       <height>23</height>
@@ -1204,7 +1204,7 @@
      <rect>
       <x>20</x>
       <y>650</y>
-      <width>151</width>
+      <width>121</width>
       <height>31</height>
      </rect>
     </property>
@@ -1319,7 +1319,7 @@
    <widget class="QLineEdit" name="ABD_goalpos_textbox">
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>160</x>
       <y>690</y>
       <width>41</width>
       <height>23</height>
@@ -1338,7 +1338,7 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>150</x>
+      <x>160</x>
       <y>730</y>
       <width>41</width>
       <height>23</height>
@@ -1426,11 +1426,16 @@
    <widget class="QLabel" name="ABD_enabled_label">
     <property name="geometry">
      <rect>
-      <x>180</x>
-      <y>655</y>
+      <x>150</x>
+      <y>656</y>
       <width>31</width>
       <height>21</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>8</pointsize>
+     </font>
     </property>
     <property name="styleSheet">
      <string notr="true">background-color: rgb(255, 74, 74);
@@ -1445,14 +1450,17 @@
     <property name="text">
      <string/>
     </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
    </widget>
    <widget class="QPushButton" name="torque_enable_button">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>880</y>
+      <x>240</x>
+      <y>410</y>
       <width>80</width>
-      <height>21</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
@@ -1462,14 +1470,137 @@
    <widget class="QPushButton" name="torque_disable_button">
     <property name="geometry">
      <rect>
-      <x>120</x>
-      <y>880</y>
+      <x>330</x>
+      <y>410</y>
       <width>80</width>
-      <height>21</height>
+      <height>31</height>
      </rect>
     </property>
     <property name="text">
      <string>Torque Off</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="reconnect_button">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>450</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Reconnect</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="ABD_calibrate_button">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>656</y>
+      <width>21</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>✻</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="MCP_calibrate_button">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>456</y>
+      <width>21</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>✻</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="PIP_calibrate_button">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>256</y>
+      <width>21</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>✻</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="DIP_calibrate_button">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>56</y>
+      <width>21</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>✻</string>
+    </property>
+    <property name="checkable">
+     <bool>true</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
     </property>
    </widget>
   </widget>
@@ -1478,7 +1609,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>230</width>
+     <width>433</width>
      <height>20</height>
     </rect>
    </property>

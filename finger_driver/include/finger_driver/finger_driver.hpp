@@ -7,6 +7,7 @@
 #include "finger_manipulation/srv/get_current.hpp"
 #include "finger_manipulation/srv/get_position.hpp"
 #include "finger_manipulation/srv/get_position_limits.hpp"
+#include "finger_manipulation/srv/set_position_limits.hpp"
 #include "finger_manipulation/srv/get_temperature.hpp"
 #include "finger_manipulation/srv/set_operating_mode.hpp"
 #include "finger_manipulation/msg/goal_position.hpp"
