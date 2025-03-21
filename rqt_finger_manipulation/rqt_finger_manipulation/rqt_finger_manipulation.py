@@ -13,6 +13,7 @@ from rqt_finger_manipulation.main_window import main_window
 
 import sys
 import asyncio
+import threading
 
 NUM_MOTORS = 4
 
@@ -55,55 +56,55 @@ class ControlNode(Node):
     async def getTemperature(self, id):
         """
         for all service caller functions:
-            input a single item or array of IDs
-            generate a future using client.call_async for ID(s)
+            input a single ID
+            generate a future using client.call_async for ID
             spin node until future is complete
             return future's result
 
-        :param id: motor ID(s) to query
+        :param id: motor ID to query
         :return: value of result
         """ 
         self.temperature_request.id = id
         future = self.temperature_client.call_async(self.temperature_request)
-        rclpy.spin_until_future_complete(self, future)
+        await future
         return future.result().temperature
 
     async def getPosition(self, id):
         self.position_request.id = id
         future = self.position_client.call_async(self.position_request)
-        rclpy.spin_until_future_complete(self, future)
+        await future
         return future.result().position
     
     async def getPositionLimits(self, id):
         self.get_position_limits_request.id = id
         future = self.get_position_limits_client.call_async(self.get_position_limits_request)
-        rclpy.spin_until_future_complete(self, future)
+        await future
         return future.result().min_position, future.result().max_position
     
     async def getCurrent(self, id):
         self.current_request.id = id
         future = self.current_client.call_async(self.current_request)
-        rclpy.spin_until_future_complete(self, future)
+        await future
         return future.result().current 
     
     async def getMotorStatus(self, id):
         self.get_motor_status_request.id = id
         future = self.get_motor_status_client.call_async(self.get_motor_status_request)
-        rclpy.spin_until_future_complete(self, future)
+        await future
         return None if future.result().disconnected else future.result().enabled
 
-    def setPositionLimits(self, id, min, max):
+    async def setPositionLimits(self, id, min, max):
         self.set_position_limits_request.id = id
         self.set_position_limits_request.min_position = min
         self.set_position_limits_request.max_position = max
         future = self.set_position_limits_client.call_async(self.set_position_limits_request)
-        rclpy.spin_until_future_complete(self, future)
+        await future
         
     async def setMotorStatus(self, id, enabled):
         self.set_motor_status_request.id = id
         self.set_motor_status_request.enabled = enabled
         future = self.set_motor_status_client.call_async(self.set_motor_status_request)
-        rclpy.spin_until_future_complete(self, future)
+        await future
 
     def setPosition(self, id, position):
         self.position_message.id = id
@@ -174,31 +175,49 @@ class RqtPlugin(Plugin):
         self.ui.torque_disable_button.clicked.connect(lambda : asyncio.run(self.disableAllMotors()))
         self.ui.reconnect_button.clicked.connect(lambda : asyncio.run(self.initializeStates()))
 
-        # DEBUG : self.connected_motors = range(1, NUM_MOTORS + 1)
+        # Spin controlNode in separate thread
+        executor = rclpy.executors.MultiThreadedExecutor()
+        executor.add_node(self.controlNode)
+        thread = threading.Thread(target=executor.spin, daemon=True)
+        thread.start()
+
+        # DEBUG : self.connected_motors = set(range(1, NUM_MOTORS + 1))
         asyncio.run(self.initializeStates())
 
         # Start update loop
         self.timer = QTimer(self)
         self.timer.setSingleShot(False)
-        self.timer.setInterval(100) # Display is updated every 100 ms
+        self.timer.setInterval(300) # Display is updated every 100 ms
         self.timer.timeout.connect(lambda : asyncio.run(self.update()))
         self.timer.start()
 
     async def update(self): # Call position, current and temperature services to update display
+        tasks = [] # Array of service call tasks
         for ID in self.connected_motors:
-            position, temperature, current, status = await asyncio.gather(
-                self.controlNode.getPosition(id=ID),
-                self.controlNode.getTemperature(id=ID),
-                self.controlNode.getCurrent(id=ID),
-                self.controlNode.getMotorStatus(id=ID),
-            )
+            tasks.append(self.controlNode.getPosition(id=ID))
+            tasks.append(self.controlNode.getTemperature(id=ID))
+            tasks.append(self.controlNode.getCurrent(id=ID))
+            tasks.append(self.controlNode.getMotorStatus(id=ID))
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+        for ID in self.connected_motors:
+            position, temperature, current, status = results[4*(ID-1):4*ID]
             
-            if status == False:   # RED = Motor torque disabled
+            # Update status indicator
+            if status == False:         # RED = Motor torque disabled
                 self.motor_widgets[ID]["status_indicator"].setStyleSheet("background-color: rgb(255, 74, 74);")
-            elif self.calibrating[ID]: # YELLOW = in calibration
+                goal_position = max(self.encoder_limits[ID][0], min(position, self.encoder_limits[ID][1]))
+                self.motor_widgets[ID]["goalpos_textbox"].setText(str(goal_position))
+                self.motor_widgets[ID]["scrollbar"].setValue(goal_position)
+            elif self.calibrating[ID]:  # YELLOW = in calibration
                 self.motor_widgets[ID]["status_indicator"].setStyleSheet("background-color: rgb(244, 248, 0);")
-            else:                 # GREEN = Motor torque enabled
+            else:                       # GREEN = Motor torque enabled
                 self.motor_widgets[ID]["status_indicator"].setStyleSheet("background-color: rgb(1, 186, 53);")
+
+            # Warn if joint is out of calibrated range
+            if not self.calibrating[ID] and (position < self.encoder_limits[ID][0] | position > self.encoder_limits[ID][1]):
+                self.motor_widgets[ID]["encoder_textbox"].setStyleSheet("background-color: rgb(252, 255, 128);")
+            else: self.motor_widgets[ID]["encoder_textbox"].setStyleSheet("")
 
             self.motor_widgets[ID]["encoder_textbox"].setText(str(position))
             self.motor_widgets[ID]["current_textbox"].setText(str(current))
@@ -257,9 +276,9 @@ class RqtPlugin(Plugin):
             self.motor_widgets[id]["prompt_label"].setText("Goal Position:")
             textbox.setValidator(None)
             asyncio.run(self.controlNode.setMotorStatus(id=id, enabled=False))
-            self.controlNode.setPositionLimits(
+            asyncio.run(self.controlNode.setPositionLimits(
                 id=id, min=self.encoder_limits[id][0], max=self.encoder_limits[id][1]
-            )
+            ))
             asyncio.run(self.controlNode.setMotorStatus(id=id, enabled=True))
             textbox.returnPressed.connect(
                 lambda: self.setPositionTextbox(
@@ -277,7 +296,7 @@ class RqtPlugin(Plugin):
 
         # Remove limits on motor positions
         asyncio.run(self.controlNode.setMotorStatus(id=id, enabled=False))
-        self.controlNode.setPositionLimits(id=id, min=0, max=4095)
+        asyncio.run(self.controlNode.setPositionLimits(id=id, min=0, max=4095))
         asyncio.run(self.controlNode.setMotorStatus(id=id, enabled=True))
         scrollbar.setRange(0, 4095)
 
@@ -313,7 +332,12 @@ class RqtPlugin(Plugin):
 
     async def enableAllMotors(self):
         for ID in self.connected_motors:
-            await self.controlNode.setMotorStatus(id = ID, enabled = True)
+            # Keep torque disabled if joint is out of calibrated range
+            if (int(self.motor_widgets[ID]["encoder_textbox"].text()) < self.encoder_limits[ID][0] or
+                int(self.motor_widgets[ID]["encoder_textbox"].text()) > self.encoder_limits[ID][1]):
+                continue
+            else: 
+                await self.controlNode.setMotorStatus(id = ID, enabled = True)
 
     async def disableAllMotors(self):
         for ID in self.connected_motors:
@@ -366,6 +390,9 @@ class RqtPlugin(Plugin):
 
         # Allow delay for motor to finish moving
         QTimer.singleShot(delay, loop.quit)
+    
+    def shutdown_plugin(self):
+        asyncio.run(self.disableAllMotors())
 
 def main():
     sys.exit(Main().main(sys.argv, standalone="rqt_finger_manipulation.rqt_finger_manipulation"))

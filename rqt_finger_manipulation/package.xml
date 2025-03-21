@@ -2,9 +2,9 @@
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>rqt_finger_manipulation</name>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <description>Custom rqt interface for finger_manipulation package</description>
-  <maintainer email="yuandi@umich.edu">root</maintainer>
+  <maintainer email="yuandi@umich.edu">Yuandi Huang</maintainer>
   <license>Apache-2.0</license>
 
   <depend>finger_manipulation</depend>
