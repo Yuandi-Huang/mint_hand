@@ -15,14 +15,26 @@ import sys
 import asyncio
 import threading
 
-NUM_MOTORS = 4
+NUM_MOTORS = 16
 
 # Dictionary mapping motor IDs to joint names
 motorIDs = {
-    1 : "ABD",
-    2 : "MCP",
-    3 : "PIP",
-    4 : "DIP"
+    1 : "INDEX_ABD",
+    2 : "INDEX_MCP",
+    3 : "INDEX_PIP",
+    4 : "INDEX_DIP",
+    5 : "MIDDLE_ABD",
+    6 : "MIDDLE_MCP",
+    7 : "MIDDLE_PIP",
+    8 : "MIDDLE_DIP",
+    9 : "RING_ABD",
+    10 : "RING_MCP",
+    11 : "RING_PIP",
+    12 : "RING_DIP",
+    13 : "THUMB_CPC",
+    14 : "THUMB_ABD",
+    15 : "THUMB_MCP",
+    16 : "THUMB_IP", 
 }
 
 # Reverse dictionary for joint names to motor IDs
@@ -43,7 +55,7 @@ class ControlNode(Node):
 
         while not self.position_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('waiting for service...')
-
+            
         self.current_request = finger_manipulation.srv.GetCurrent.Request()
         self.position_request = finger_manipulation.srv.GetPosition.Request()
         self.get_position_limits_request = finger_manipulation.srv.GetPositionLimits.Request()
@@ -187,7 +199,7 @@ class RqtPlugin(Plugin):
         # Start update loop
         self.timer = QTimer(self)
         self.timer.setSingleShot(False)
-        self.timer.setInterval(300) # Display is updated every 100 ms
+        self.timer.setInterval(100) # Display is updated every 100 ms
         self.timer.timeout.connect(lambda : asyncio.run(self.update()))
         self.timer.start()
 
@@ -200,9 +212,12 @@ class RqtPlugin(Plugin):
             tasks.append(self.controlNode.getMotorStatus(id=ID))
 
         results = await asyncio.gather(*tasks, return_exceptions=True)
+        idx = 0
+
         for ID in self.connected_motors:
-            position, temperature, current, status = results[4*(ID-1):4*ID]
-            
+            position, temperature, current, status = results[idx:idx+4]
+            idx = idx + 4
+
             # Update status indicator
             if status == False:         # RED = Motor torque disabled
                 self.motor_widgets[ID]["status_indicator"].setStyleSheet("background-color: rgb(255, 74, 74);")
@@ -215,7 +230,7 @@ class RqtPlugin(Plugin):
                 self.motor_widgets[ID]["status_indicator"].setStyleSheet("background-color: rgb(1, 186, 53);")
 
             # Warn if joint is out of calibrated range
-            if not self.calibrating[ID] and (position < self.encoder_limits[ID][0] | position > self.encoder_limits[ID][1]):
+            if not self.calibrating[ID] and (position < self.encoder_limits[ID][0] or position > self.encoder_limits[ID][1]):
                 self.motor_widgets[ID]["encoder_textbox"].setStyleSheet("background-color: rgb(252, 255, 128);")
             else: self.motor_widgets[ID]["encoder_textbox"].setStyleSheet("")
 
@@ -302,7 +317,7 @@ class RqtPlugin(Plugin):
 
         # Update status indicator
         self.calibrating[id] = True
-        self.motor_widgets[id]["prompt_label"].setText("Enter MIN Range:")
+        self.motor_widgets[id]["prompt_label"].setText("Set MIN Range:")
         
         # Override goalpos_textbox behavior
         textbox.returnPressed.disconnect()
@@ -319,7 +334,7 @@ class RqtPlugin(Plugin):
         loop.exec() # Halt execution until min range is set
         min = int(textbox.text())
 
-        self.motor_widgets[id]["prompt_label"].setText("Enter MAX Range:")
+        self.motor_widgets[id]["prompt_label"].setText("Set MAX Range:")
         delay = 300 # Wait 300 ms to ensure motor reaches destination
         loop.exec() # Halt execution until max range is set
         max = int(textbox.text())
