@@ -219,15 +219,26 @@ class RqtPlugin(Plugin):
             idx = idx + 4
 
             # Update status indicator
-            if status == False:         # RED = Motor torque disabled
-                self.motor_widgets[ID]["status_indicator"].setStyleSheet("background-color: rgb(255, 74, 74);")
+            if status == False and not self.calibrating[ID]:    # RED = Motor torque disabled
+                self.motor_widgets[ID]["status_indicator"].setStyleSheet("background-color: red;")
                 goal_position = max(self.encoder_limits[ID][0], min(position, self.encoder_limits[ID][1]))
                 self.motor_widgets[ID]["goalpos_textbox"].setText(str(goal_position))
                 self.motor_widgets[ID]["scrollbar"].setValue(goal_position)
-            elif self.calibrating[ID]:  # YELLOW = in calibration
-                self.motor_widgets[ID]["status_indicator"].setStyleSheet("background-color: rgb(244, 248, 0);")
-            else:                       # GREEN = Motor torque enabled
-                self.motor_widgets[ID]["status_indicator"].setStyleSheet("background-color: rgb(1, 186, 53);")
+            elif status == False and self.calibrating[ID]:      # YELLOW-RED = in calibration while torque disabled
+                self.motor_widgets[ID]["status_indicator"].setStyleSheet("""
+                    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,
+                    stop:0 yellow, stop:0.6 yellow, stop:0.61 red, stop:1 red);
+                    border: 1px solid grey;""")
+                goal_position = position
+                self.motor_widgets[ID]["goalpos_textbox"].setText(str(goal_position))
+                self.motor_widgets[ID]["scrollbar"].setValue(goal_position)
+            elif self.calibrating[ID]:                          # YELLOW-GREEN = in calibration while torque enabled
+                self.motor_widgets[ID]["status_indicator"].setStyleSheet("""
+                    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:0,
+                    stop:0 yellow, stop:0.6 yellow, stop:0.61 green, stop:1 green);
+                    border: 1px solid grey;""")
+            else:                                               # GREEN = Motor torque enabled
+                self.motor_widgets[ID]["status_indicator"].setStyleSheet("background-color: green;")
 
             # Warn if joint is out of calibrated range
             if not self.calibrating[ID] and (position < self.encoder_limits[ID][0] or position > self.encoder_limits[ID][1]):
@@ -284,6 +295,7 @@ class RqtPlugin(Plugin):
         button = self.motor_widgets[id]["calibrate_button"]
         scrollbar = self.motor_widgets[id]["scrollbar"]
         textbox = self.motor_widgets[id]["goalpos_textbox"]
+        prev_enabled = asyncio.run(self.controlNode.getMotorStatus(id))
 
         def exitCalibration():
             button.setChecked(False)
@@ -294,7 +306,7 @@ class RqtPlugin(Plugin):
             asyncio.run(self.controlNode.setPositionLimits(
                 id=id, min=self.encoder_limits[id][0], max=self.encoder_limits[id][1]
             ))
-            asyncio.run(self.controlNode.setMotorStatus(id=id, enabled=True))
+            asyncio.run(self.controlNode.setMotorStatus(id=id, enabled=prev_enabled))
             textbox.returnPressed.connect(
                 lambda: self.setPositionTextbox(
                     id = id, 
@@ -312,7 +324,7 @@ class RqtPlugin(Plugin):
         # Remove limits on motor positions
         asyncio.run(self.controlNode.setMotorStatus(id=id, enabled=False))
         asyncio.run(self.controlNode.setPositionLimits(id=id, min=0, max=4095))
-        asyncio.run(self.controlNode.setMotorStatus(id=id, enabled=True))
+        asyncio.run(self.controlNode.setMotorStatus(id=id, enabled=prev_enabled))
         scrollbar.setRange(0, 4095)
 
         # Update status indicator
