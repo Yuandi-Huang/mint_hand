@@ -11,6 +11,7 @@ find_package(std_msgs REQUIRED)
 find_package(dynamixel_sdk REQUIRED)
 find_package(rosidl_default_generators REQUIRED)  
 find_package(rosidl_default_runtime REQUIRED)
+find_package(rclpy REQUIRED)
 
 set(msg_files
   "msg/GoalPosition.msg"
@@ -48,6 +49,12 @@ ament_target_dependencies(finger_driver rclcpp std_msgs dynamixel_sdk rosidl_def
 
 install(TARGETS 
   finger_driver
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(PROGRAMS
+  scripts/pose_record.py
+  scripts/pose_playback.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
