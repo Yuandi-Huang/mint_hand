@@ -7,7 +7,9 @@ import finger_manipulation.srv
 import finger_manipulation.msg
 import threading
 import argparse
+import curses
 import time
+import ast
 
 class ControlNode(Node):
     def __init__(self):
@@ -26,6 +28,19 @@ class ControlNode(Node):
         reliability=QoSReliabilityPolicy.RELIABLE
     )
 
+def playback(stdscr, controlNode, motors, poses, interval):
+    stdscr.addstr("Press enter to begin, and any key to quit\n")
+    key = stdscr.getch()
+    pose_idx = 0
+    stdscr.nodelay(True)
+    while True:
+        key = stdscr.getch()
+        if key != -1: break
+        for i in range(0,len(motors)):
+            controlNode.setPosition(int(motors[i]),int(poses[pose_idx][i]))
+        pose_idx = (pose_idx + 1) % len(poses)
+        time.sleep(interval)
+
 def main():
     rclpy.init()
     controlNode = ControlNode()
@@ -36,7 +51,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Publishes /goal_position values for predefined poses on loop.")
     parser.add_argument("filename", type=str, help="Path to playback text file")
-    parser.add_argument("-p","--pose_interval", type=float, default=2, help="Time delay in seconds before changing pose")
+    parser.add_argument("-i","--interval", type=float, default=2, help="Time delay in seconds before changing pose")
     args = parser.parse_args()
 
     try:
@@ -47,28 +62,20 @@ def main():
         return
     
     text = text.splitlines()
-    motors = text[0].split(",")
+    motors = ast.literal_eval(text[0])
     poses = []
     del text[:2]
 
     for pose in text:
         try:
-            if "[" not in pose or "]" not in pose: raise Exception
-            pose = pose.replace("[","")
-            pose = pose.replace("]","")
-            pose = pose.split(",")
+            pose = ast.literal_eval(pose)
             poses.append(pose)
             if len(pose) != len(motors): raise Exception
         except:
             print("Invalid file formatting.")
             return
     
-    pose_idx = 0
-    while True:
-        for i in range(0,len(motors)):
-            controlNode.setPosition(int(motors[i]),int(poses[pose_idx][i]))
-        pose_idx = (pose_idx + 1) % len(poses)
-        time.sleep(args.pose_interval)
+    curses.wrapper(playback, controlNode, motors, poses, args.interval)
 
 if __name__ == '__main__':
     main()

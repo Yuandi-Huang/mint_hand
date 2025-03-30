@@ -9,6 +9,8 @@ import threading
 import argparse
 import asyncio
 import sys
+import curses
+import time
 
 NUM_MOTORS = 16
 
@@ -38,6 +40,29 @@ class ControlNode(Node):
         reliability=QoSReliabilityPolicy.RELIABLE
     )
 
+def recordDiscrete(controlNode, motors, poses):
+    key = sys.stdin.read(1)
+    while key != "q":
+        pose = []
+        for ID in motors:
+            pose.append(asyncio.run(controlNode.getPosition(id=ID)))
+        poses.append(pose)
+        print("Saved:", pose)
+        key = sys.stdin.read(1)
+
+def recordContinuous(stdscr, controlNode, motors, poses, interval):
+    stdscr.nodelay(True)
+    stdscr.scrollok(True)
+    while True:
+        key = stdscr.getch()
+        if key != -1: break
+        pose = []
+        for ID in motors:
+            pose.append(asyncio.run(controlNode.getPosition(id=ID)))
+        poses.append(pose)
+        stdscr.addstr("Saved: " + str(pose) + "\n")
+        time.sleep(interval)
+
 def main():
     rclpy.init()
     controlNode = ControlNode()
@@ -48,6 +73,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Saves user-configured poses to a text file for playback.")
     parser.add_argument("filename", type=str, help="Path to output file")
+    parser.add_argument("-i", "--interval", type=float, default=None, help="Time delay in seconds to automatically record pose")
     args = parser.parse_args()
 
     motors = []
@@ -56,22 +82,18 @@ def main():
         motor_status = asyncio.run(controlNode.getMotorStatus(ID))
         if motor_status is None: continue
         motors.append(ID)
-    print("Detected motors:", motors)
-    print("Press enter to save current pose, or q to quit")
 
-    key = sys.stdin.read(1)
-    while key != "q":
-        pose = []
-        for ID in motors:
-            pose.append(asyncio.run(controlNode.getPosition(id=ID)))
-        poses.append(pose)
-        print("Saved:", pose)
-        key = sys.stdin.read(1)
+    print("Detected motors:", motors)
+    if args.interval is None:
+        print("Press enter to save current pose, or q to quit")
+        recordDiscrete(controlNode, motors, poses)
+    else: 
+        print("Press enter to begin recording, and any key to quit")
+        input()
+        curses.wrapper(recordContinuous, controlNode, motors, poses, args.interval)
 
     with open(args.filename, "w") as file:
-        motors = str(motors).replace("[","")
-        motors = motors.replace("]","")
-        file.write(motors+"\n---\n")
+        file.write(str(motors)+"\n---\n")
         for pose in poses:
             file.write(str(pose)+"\n")
 
