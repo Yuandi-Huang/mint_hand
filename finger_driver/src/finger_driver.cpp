@@ -55,6 +55,8 @@ public:
             "/set_torque_enabled", std::bind(&finger_driver::setTorqueEnabledCallback, this, _1, _2));
         get_torque_enabled_srv = this->create_service<finger_manipulation::srv::GetTorqueEnabled>(
             "/get_torque_enabled", std::bind(&finger_driver::getTorqueEnabledCallback, this, _1, _2));
+        get_torque_enabled_bulk_srv = this->create_service<finger_manipulation::srv::GetTorqueEnabledBulk>(
+            "/get_torque_enabled_bulk", std::bind(&finger_driver::getTorqueEnabledBulkCallback, this, _1, _2));     
         get_position_srv = this->create_service<finger_manipulation::srv::GetPosition>(
             "/get_position", std::bind(&finger_driver::getPresentPositionCallback, this, _1, _2));
         get_position_bulk_srv = this->create_service<finger_manipulation::srv::GetPositionBulk>(
@@ -72,7 +74,7 @@ public:
         get_temperature_bulk_srv = this->create_service<finger_manipulation::srv::GetTemperatureBulk>(
             "/get_temperature_bulk", std::bind(&finger_driver::getPresentTemperatureBulkCallback, this, _1, _2));
         set_operating_mode_srv = this->create_service<finger_manipulation::srv::SetOperatingMode>(
-            "/set_operating_mode", std::bind(&finger_driver::setOperatingModeCallback, this, _1, _2)); 
+            "/set_operating_mode", std::bind(&finger_driver::setOperatingModeCallback, this, _1, _2));
 
         // Create subscribers
         goal_position_sub = this->create_subscription<finger_manipulation::msg::GoalPosition>(
@@ -92,6 +94,7 @@ public:
 private:
     rclcpp::Service<finger_manipulation::srv::SetTorqueEnabled>::SharedPtr set_torque_enabled_srv;
     rclcpp::Service<finger_manipulation::srv::GetTorqueEnabled>::SharedPtr get_torque_enabled_srv;
+    rclcpp::Service<finger_manipulation::srv::GetTorqueEnabledBulk>::SharedPtr get_torque_enabled_bulk_srv;
 
     rclcpp::Service<finger_manipulation::srv::GetCurrent>::SharedPtr get_current_srv;
     rclcpp::Service<finger_manipulation::srv::GetCurrentBulk>::SharedPtr get_current_bulk_srv;
@@ -492,23 +495,79 @@ private:
 
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
-        int8_t torque_enabled = 0;
+        int8_t enabled = 0;
 
         dxl_comm_result = packetHandler->read1ByteTxRx(
             portHandler, (uint8_t)request->id, ADDR_TORQUE_ENABLE, 
-            (uint8_t *)&torque_enabled, &dxl_error);
+            (uint8_t *)&enabled, &dxl_error);
 
         if (dxl_comm_result == COMM_SUCCESS) {
-            response->enabled = torque_enabled;
+            response->enabled = enabled;
             RCLCPP_INFO(this->get_logger(), 
                 "getTorqueEnabled : [ID:%d] -> [ENABLED:%d]", 
-                request->id, torque_enabled);
+                request->id, enabled);
         } else {
             response->disconnected = true;
             RCLCPP_ERROR(this->get_logger(), 
                 "Failed to get enabled status for ID %d -- Result: %d", 
                 request->id, dxl_comm_result);
         }
+    }
+    
+    /**
+     * @brief Bulk read version of /get_torque_enabled service
+     *
+     * @param request Contains an array of motor IDs.
+     * @param response Contains an array of the motors' torque states (enabled/disabled).
+     */
+    void getTorqueEnabledBulkCallback(
+        const std::shared_ptr<finger_manipulation::srv::GetTorqueEnabledBulk::Request> request,
+        std::shared_ptr<finger_manipulation::srv::GetTorqueEnabledBulk::Response> response) {
+
+        auto group_sync_read = GroupSyncRead(portHandler, packetHandler, ADDR_TORQUE_ENABLE, 1);
+        int num_motors = request->id.size();
+        
+        for (int i = 0; i < num_motors; i++) {
+            group_sync_read.addParam((uint8_t)request->id[i]);
+        }
+
+        int dxl_comm_result = group_sync_read.txRxPacket();
+        std::vector<bool> enabled(num_motors);
+        std::vector<bool> disconnected(num_motors);
+
+        // Check motors individually if any are disconnected
+        if (dxl_comm_result != COMM_SUCCESS) {
+            for (int i = 0; i < num_motors; i++) {
+                bool result;
+                dxl_comm_result = packetHandler->read1ByteTxRx(
+                    portHandler, (uint8_t)request->id[i], ADDR_TORQUE_ENABLE, 
+                    (uint8_t *)&result);
+                enabled[i] = result;
+                if (dxl_comm_result == COMM_SUCCESS) {
+                    RCLCPP_INFO(this->get_logger(), 
+                        "getTorqueEnabledBulk : [ID:%d] -> [ENABLED:%d]", 
+                        request->id[i], (int)enabled[i]);
+                } else {
+                    disconnected[i] = true;
+                    RCLCPP_ERROR(this->get_logger(), 
+                        "Failed to get enabled status for ID %d -- Result: %d", 
+                        request->id[i], dxl_comm_result);
+                }
+            }
+            response->enabled = enabled;
+            response->disconnected = disconnected;
+            return;
+        }
+
+        for (int i = 0; i < num_motors; i++) {
+            enabled[i] = group_sync_read.getData((uint8_t)request->id[i], ADDR_TORQUE_ENABLE, 1);
+            RCLCPP_INFO(this->get_logger(), 
+                "getTorqueEnabledBulk : [ID:%d] -> [ENABLED:%d]", 
+                request->id[i], (uint8_t)enabled[i]);
+        }
+
+        response->enabled = enabled;
+        response->disconnected = disconnected;
     }
 
     /**

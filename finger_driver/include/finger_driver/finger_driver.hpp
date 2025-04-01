@@ -3,6 +3,7 @@
 
 #include "finger_manipulation/srv/set_torque_enabled.hpp"
 #include "finger_manipulation/srv/get_torque_enabled.hpp"
+#include "finger_manipulation/srv/get_torque_enabled_bulk.hpp"
 
 #include "finger_manipulation/srv/get_current.hpp"
 #include "finger_manipulation/srv/get_current_bulk.hpp"

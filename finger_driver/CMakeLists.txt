@@ -29,6 +29,7 @@ set(srv_files
   "srv/GetTemperature.srv"
   "srv/GetTemperatureBulk.srv"
   "srv/GetTorqueEnabled.srv"
+  "srv/GetTorqueEnabledBulk.srv"
   "srv/SetOperatingMode.srv"
   "srv/SetTorqueEnabled.srv"
 )
