@@ -15,16 +15,22 @@ find_package(rclpy REQUIRED)
 
 set(msg_files
   "msg/GoalPosition.msg"
+  "msg/GoalPositionBulk.msg"
   "msg/GoalCurrent.msg"
+  "msg/GoalCurrentBulk.msg"
 )
 
 set(srv_files
   "srv/GetCurrent.srv"
+  "srv/GetCurrentBulk.srv"
   "srv/GetPosition.srv"
+  "srv/GetPositionBulk.srv"
   "srv/GetPositionLimits.srv"
   "srv/SetPositionLimits.srv"
   "srv/GetTemperature.srv"
+  "srv/GetTemperatureBulk.srv"
   "srv/GetTorqueEnabled.srv"
+  "srv/GetTorqueEnabledBulk.srv"
   "srv/SetOperatingMode.srv"
   "srv/SetTorqueEnabled.srv"
 )

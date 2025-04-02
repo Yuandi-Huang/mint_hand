@@ -49,71 +49,71 @@ public:
             rclcpp::shutdown();
             return;
         }
-       
+        
         // Create services
         set_torque_enabled_srv = this->create_service<finger_manipulation::srv::SetTorqueEnabled>(
-            "/set_torque_enabled",
-            std::bind(&finger_driver::setTorqueEnabledCallback, this, _1, _2));
-
+            "/set_torque_enabled", std::bind(&finger_driver::setTorqueEnabledCallback, this, _1, _2));
         get_torque_enabled_srv = this->create_service<finger_manipulation::srv::GetTorqueEnabled>(
-            "/get_torque_enabled",
-            std::bind(&finger_driver::getTorqueEnabledCallback, this, _1, _2));
-
+            "/get_torque_enabled", std::bind(&finger_driver::getTorqueEnabledCallback, this, _1, _2));
+        get_torque_enabled_bulk_srv = this->create_service<finger_manipulation::srv::GetTorqueEnabledBulk>(
+            "/get_torque_enabled_bulk", std::bind(&finger_driver::getTorqueEnabledBulkCallback, this, _1, _2));     
         get_position_srv = this->create_service<finger_manipulation::srv::GetPosition>(
-            "/get_position",
-            std::bind(&finger_driver::getPresentPositionCallback, this, _1, _2));
-
+            "/get_position", std::bind(&finger_driver::getPresentPositionCallback, this, _1, _2));
+        get_position_bulk_srv = this->create_service<finger_manipulation::srv::GetPositionBulk>(
+            "/get_position_bulk", std::bind(&finger_driver::getPresentPositionBulkCallback, this, _1, _2));
         get_position_limits_srv = this->create_service<finger_manipulation::srv::GetPositionLimits>(
-            "/get_position_limits",
-            std::bind(&finger_driver::getPositionLimitsCallback, this, _1, _2));
-        
+            "/get_position_limits", std::bind(&finger_driver::getPositionLimitsCallback, this, _1, _2));
         set_position_limits_srv = this->create_service<finger_manipulation::srv::SetPositionLimits>(
-            "/set_position_limits",
-            std::bind(&finger_driver::setPositionLimitsCallback, this, _1, _2));
-        
+            "/set_position_limits", std::bind(&finger_driver::setPositionLimitsCallback, this, _1, _2));
         get_current_srv = this->create_service<finger_manipulation::srv::GetCurrent>(
-            "/get_current",
-            std::bind(&finger_driver::getPresentCurrentCallback, this, _1, _2));
-
+            "/get_current", std::bind(&finger_driver::getPresentCurrentCallback, this, _1, _2));
+        get_current_bulk_srv = this->create_service<finger_manipulation::srv::GetCurrentBulk>(
+            "/get_current_bulk", std::bind(&finger_driver::getPresentCurrentBulkCallback, this, _1, _2));
         get_temperature_srv = this->create_service<finger_manipulation::srv::GetTemperature>(
-            "/get_temperature",
-            std::bind(&finger_driver::getPresentTemperatureCallback, this, _1, _2));
-
+            "/get_temperature", std::bind(&finger_driver::getPresentTemperatureCallback, this, _1, _2));
+        get_temperature_bulk_srv = this->create_service<finger_manipulation::srv::GetTemperatureBulk>(
+            "/get_temperature_bulk", std::bind(&finger_driver::getPresentTemperatureBulkCallback, this, _1, _2));
         set_operating_mode_srv = this->create_service<finger_manipulation::srv::SetOperatingMode>(
-            "/set_operating_mode",
-            std::bind(&finger_driver::setOperatingModeCallback, this, _1, _2));
+            "/set_operating_mode", std::bind(&finger_driver::setOperatingModeCallback, this, _1, _2));
 
         // Create subscribers
         goal_position_sub = this->create_subscription<finger_manipulation::msg::GoalPosition>(
-            "/goal_position", 10,
-            std::bind(&finger_driver::goalPositionCallback, this, _1));
-
+            "/goal_position", 10, std::bind(&finger_driver::goalPositionCallback, this, _1));
+        goal_position_bulk_sub = this->create_subscription<finger_manipulation::msg::GoalPositionBulk>(
+            "/goal_position_bulk", 10, std::bind(&finger_driver::goalPositionBulkCallback, this, _1));
         goal_current_sub = this->create_subscription<finger_manipulation::msg::GoalCurrent>(
-            "/goal_current", 10,
-            std::bind(&finger_driver::goalCurrentCallback, this, _1));
+            "/goal_current", 10, std::bind(&finger_driver::goalCurrentCallback, this, _1));
+        goal_current_bulk_sub = this->create_subscription<finger_manipulation::msg::GoalCurrentBulk>(
+            "/goal_current_bulk", 10, std::bind(&finger_driver::goalCurrentBulkCallback, this, _1));
     }
 
-    ~finger_driver() {
+    virtual ~finger_driver() {
         portHandler->closePort();
     }
 
 private:
     rclcpp::Service<finger_manipulation::srv::SetTorqueEnabled>::SharedPtr set_torque_enabled_srv;
     rclcpp::Service<finger_manipulation::srv::GetTorqueEnabled>::SharedPtr get_torque_enabled_srv;
+    rclcpp::Service<finger_manipulation::srv::GetTorqueEnabledBulk>::SharedPtr get_torque_enabled_bulk_srv;
 
     rclcpp::Service<finger_manipulation::srv::GetCurrent>::SharedPtr get_current_srv;
+    rclcpp::Service<finger_manipulation::srv::GetCurrentBulk>::SharedPtr get_current_bulk_srv;
     rclcpp::Service<finger_manipulation::srv::GetPosition>::SharedPtr get_position_srv;
+    rclcpp::Service<finger_manipulation::srv::GetPositionBulk>::SharedPtr get_position_bulk_srv;
     rclcpp::Service<finger_manipulation::srv::GetPositionLimits>::SharedPtr get_position_limits_srv;
     rclcpp::Service<finger_manipulation::srv::SetPositionLimits>::SharedPtr set_position_limits_srv;
     rclcpp::Service<finger_manipulation::srv::GetTemperature>::SharedPtr get_temperature_srv;
+    rclcpp::Service<finger_manipulation::srv::GetTemperatureBulk>::SharedPtr get_temperature_bulk_srv;
     rclcpp::Service<finger_manipulation::srv::SetOperatingMode>::SharedPtr set_operating_mode_srv;
 
     rclcpp::Subscription<finger_manipulation::msg::GoalPosition>::SharedPtr goal_position_sub;
+    rclcpp::Subscription<finger_manipulation::msg::GoalPositionBulk>::SharedPtr goal_position_bulk_sub;
     rclcpp::Subscription<finger_manipulation::msg::GoalCurrent>::SharedPtr goal_current_sub;
+    rclcpp::Subscription<finger_manipulation::msg::GoalCurrentBulk>::SharedPtr goal_current_bulk_sub;
 
     PortHandler * portHandler;
     PacketHandler * packetHandler;
-
+    
     /**
      * @brief Handles requests for the set_torque_enabled service.
      *
@@ -178,6 +178,42 @@ private:
     }
     
     /**
+     * @brief Bulk read version of /get_current service
+     *
+     * @param request Contains an array of motor IDs.
+     * @param response Contains an array of present current in mA.
+     */
+    void getPresentCurrentBulkCallback(
+        const std::shared_ptr<finger_manipulation::srv::GetCurrentBulk::Request> request,
+        std::shared_ptr<finger_manipulation::srv::GetCurrentBulk::Response> response) {
+
+        auto group_sync_read = GroupSyncRead(portHandler, packetHandler, ADDR_PRESENT_CURRENT, 2);
+        int num_motors = request->id.size();
+        
+        for (int i = 0; i < num_motors; i++)
+            group_sync_read.addParam((uint8_t)request->id[i]);
+        
+        int dxl_comm_result = group_sync_read.txRxPacket();
+        std::vector<int16_t> current(num_motors, 0);
+
+        if (dxl_comm_result != COMM_SUCCESS) {
+            response->current = current;
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to bulk read current -- Result: %d", dxl_comm_result);
+            return;
+        }
+
+        for (int i = 0; i < num_motors; i++) {
+            current[i] = group_sync_read.getData((uint8_t)request->id[i], ADDR_PRESENT_CURRENT, 2);
+            RCLCPP_INFO(this->get_logger(), 
+                "getCurrentBulk : [ID:%d] -> [CURRENT:%d]", 
+                request->id[i], current[i]);
+        }
+
+        response->current = current;
+    }
+
+    /**
      * @brief Handles requests for the get_position service.
      *
      * This callback is invoked when a request for motor encoder 
@@ -208,6 +244,42 @@ private:
                 "Failed to get position for ID %d -- Result: %d", 
                 request->id, dxl_comm_result);
         }
+    }
+    
+    /**
+     * @brief Bulk read version of /get_position service
+     *
+     * @param request Contains an array of motor IDs.
+     * @param response Contains an array of present raw encoder positions.
+     */
+    void getPresentPositionBulkCallback(
+        const std::shared_ptr<finger_manipulation::srv::GetPositionBulk::Request> request,
+        std::shared_ptr<finger_manipulation::srv::GetPositionBulk::Response> response) {
+
+        auto group_sync_read = GroupSyncRead(portHandler, packetHandler, ADDR_PRESENT_POSITION, 4);
+        int num_motors = request->id.size();
+        
+        for (int i = 0; i < num_motors; i++)
+            group_sync_read.addParam((uint8_t)request->id[i]);
+        
+        int dxl_comm_result = group_sync_read.txRxPacket();
+        std::vector<int32_t> position(num_motors, 0);
+
+        if (dxl_comm_result != COMM_SUCCESS) {
+            response->position = position;
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to bulk read position -- Result: %d", dxl_comm_result);
+            return;
+        }
+
+        for (int i = 0; i < num_motors; i++) {
+            position[i] = group_sync_read.getData((uint8_t)request->id[i], ADDR_PRESENT_POSITION, 4);
+            RCLCPP_INFO(this->get_logger(), 
+                "getPositionBulk : [ID:%d] -> [POSITION:%d]", 
+                request->id[i], position[i]);
+        }
+
+        response->position = position;
     }
 
     /**
@@ -319,6 +391,42 @@ private:
     }
     
     /**
+     * @brief Bulk read version of /get_temperature service
+     *
+     * @param request Contains an array of motor IDs.
+     * @param response Contains an array of the present temperatures in Celsius.
+     */
+    void getPresentTemperatureBulkCallback(
+        const std::shared_ptr<finger_manipulation::srv::GetTemperatureBulk::Request> request,
+        std::shared_ptr<finger_manipulation::srv::GetTemperatureBulk::Response> response) {
+
+        auto group_sync_read = GroupSyncRead(portHandler, packetHandler, ADDR_PRESENT_TEMP, 1);
+        int num_motors = request->id.size();
+        
+        for (int i = 0; i < num_motors; i++)
+            group_sync_read.addParam((uint8_t)request->id[i]);
+        
+        int dxl_comm_result = group_sync_read.txRxPacket();
+        std::vector<int8_t> temperature(num_motors, 0);
+
+        if (dxl_comm_result != COMM_SUCCESS) {
+            response->temperature = temperature;
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to bulk read temperature -- Result: %d", dxl_comm_result);
+            return;
+        }
+
+        for (int i = 0; i < num_motors; i++) {
+            temperature[i] = group_sync_read.getData((uint8_t)request->id[i], ADDR_PRESENT_TEMP, 1);
+            RCLCPP_INFO(this->get_logger(), 
+                "getTemperatureBulk : [ID:%d] -> [TEMPERATURE:%d]", 
+                request->id[i], temperature[i]);
+        }
+
+        response->temperature = temperature;
+    }
+    
+    /**
      * @brief Handles requests for the set_operating_mode service.
      *
      * This callback is invoked when a request to set  
@@ -390,17 +498,17 @@ private:
 
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
-        int8_t torque_enabled = 0;
+        int8_t enabled = 0;
 
         dxl_comm_result = packetHandler->read1ByteTxRx(
             portHandler, (uint8_t)request->id, ADDR_TORQUE_ENABLE, 
-            (uint8_t *)&torque_enabled, &dxl_error);
+            (uint8_t *)&enabled, &dxl_error);
 
         if (dxl_comm_result == COMM_SUCCESS) {
-            response->enabled = torque_enabled;
+            response->enabled = enabled;
             RCLCPP_INFO(this->get_logger(), 
                 "getTorqueEnabled : [ID:%d] -> [ENABLED:%d]", 
-                request->id, torque_enabled);
+                request->id, enabled);
         } else {
             response->disconnected = true;
             RCLCPP_ERROR(this->get_logger(), 
@@ -409,6 +517,62 @@ private:
         }
     }
     
+    /**
+     * @brief Bulk read version of /get_torque_enabled service
+     *
+     * @param request Contains an array of motor IDs.
+     * @param response Contains an array of the motors' torque states (enabled/disabled).
+     */
+    void getTorqueEnabledBulkCallback(
+        const std::shared_ptr<finger_manipulation::srv::GetTorqueEnabledBulk::Request> request,
+        std::shared_ptr<finger_manipulation::srv::GetTorqueEnabledBulk::Response> response) {
+
+        auto group_sync_read = GroupSyncRead(portHandler, packetHandler, ADDR_TORQUE_ENABLE, 1);
+        int num_motors = request->id.size();
+        
+        for (int i = 0; i < num_motors; i++) {
+            group_sync_read.addParam((uint8_t)request->id[i]);
+        }
+
+        int dxl_comm_result = group_sync_read.txRxPacket();
+        std::vector<bool> enabled(num_motors, false);
+        std::vector<bool> disconnected(num_motors, false);
+
+        // Check motors individually if any are disconnected
+        if (dxl_comm_result != COMM_SUCCESS) {
+            for (int i = 0; i < num_motors; i++) {
+                bool result;
+                dxl_comm_result = packetHandler->read1ByteTxRx(
+                    portHandler, (uint8_t)request->id[i], ADDR_TORQUE_ENABLE, 
+                    (uint8_t *)&result);
+                enabled[i] = result;
+                if (dxl_comm_result == COMM_SUCCESS) {
+                    RCLCPP_INFO(this->get_logger(), 
+                        "getTorqueEnabledBulk : [ID:%d] -> [ENABLED:%d]", 
+                        request->id[i], (int)enabled[i]);
+                } else {
+                    disconnected[i] = true;
+                    RCLCPP_ERROR(this->get_logger(), 
+                        "Failed to get enabled status for ID %d -- Result: %d", 
+                        request->id[i], dxl_comm_result);
+                }
+            }
+            response->enabled = enabled;
+            response->disconnected = disconnected;
+            return;
+        }
+
+        for (int i = 0; i < num_motors; i++) {
+            enabled[i] = group_sync_read.getData((uint8_t)request->id[i], ADDR_TORQUE_ENABLE, 1);
+            RCLCPP_INFO(this->get_logger(), 
+                "getTorqueEnabledBulk : [ID:%d] -> [ENABLED:%d]", 
+                request->id[i], (uint8_t)enabled[i]);
+        }
+
+        response->enabled = enabled;
+        response->disconnected = disconnected;
+    }
+
     /**
      * @brief Callback function for the goal_position topic.
      *
@@ -429,7 +593,7 @@ private:
 
         if (dxl_comm_result == COMM_SUCCESS) {
             RCLCPP_INFO(this->get_logger(), 
-                "setPosition : [ID:%d] [POSITION:%d]", 
+                "goalPosition : [ID:%d] [POSITION:%d]", 
                 msg->id, msg->position);
         } else {
             RCLCPP_ERROR(this->get_logger(), 
@@ -437,7 +601,43 @@ private:
                 msg->id, dxl_comm_result);
         }
     }
-    
+   
+    /**
+     * @brief Bulk publish version for goal_position topic.
+     * @param msg Contains an array of motor IDs and goal positions.
+     */
+    void goalPositionBulkCallback(
+        const finger_manipulation::msg::GoalPositionBulk::SharedPtr msg) {
+
+        auto group_sync_write = GroupSyncWrite(portHandler, packetHandler, ADDR_GOAL_POSITION, 4);
+        int num_motors = (int)msg->id.size();
+        if (num_motors != (int)msg->position.size()) {
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to bulk write position -- invalid message");
+            return;
+        }
+        
+        for (int i = 0; i < num_motors; i++) {
+            int32_t position_value = msg->position[i];
+            uint8_t position_bytes[4];
+            std::memcpy(position_bytes, &position_value, sizeof(int32_t));
+            group_sync_write.addParam((uint8_t)msg->id[i], position_bytes);
+        }
+
+        int dxl_comm_result = group_sync_write.txPacket();
+        if (dxl_comm_result != COMM_SUCCESS) {
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to bulk write goal position -- Result: %d", dxl_comm_result);
+            return;
+        }
+
+        for (int i = 0; i < num_motors; i++) {
+            RCLCPP_INFO(this->get_logger(), 
+                "goalPositionBulk : [ID:%d] [POSITION:%d]", 
+                msg->id[i], msg->position[i]);
+        }
+    }
+
     /**
      * @brief Callback function for the goal_current topic.
      *
@@ -458,12 +658,48 @@ private:
 
         if (dxl_comm_result == COMM_SUCCESS) {
             RCLCPP_INFO(this->get_logger(), 
-                "setCurrent : [ID:%d] [CURRENT:%d]", 
+                "goalCurrent : [ID:%d] [CURRENT:%d]", 
                 msg->id, msg->current);
         } else {
             RCLCPP_ERROR(this->get_logger(), 
                 "Failed to set current for ID %d -- Result: %d", 
                 msg->id, dxl_comm_result);
+        }
+    }
+
+    /**
+     * @brief Bulk publish version for goal_current topic.
+     * @param msg Contains an array of motor IDs and goal currents.
+     */
+    void goalCurrentBulkCallback(
+        const finger_manipulation::msg::GoalCurrentBulk::SharedPtr msg) {
+
+        auto group_sync_write = GroupSyncWrite(portHandler, packetHandler, ADDR_GOAL_CURRENT, 2);
+        int num_motors = (int)msg->id.size();
+        if (num_motors != (int)msg->current.size()) {
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to bulk write goal current -- invalid message");
+            return;
+        }
+        
+        for (int i = 0; i < num_motors; i++) {
+            int16_t current_value = msg->current[i];
+            uint8_t current_bytes[2];
+            std::memcpy(current_bytes, &current_value, sizeof(int16_t));
+            group_sync_write.addParam((uint8_t)msg->id[i], current_bytes);
+        }
+
+        int dxl_comm_result = group_sync_write.txPacket();
+        if (dxl_comm_result != COMM_SUCCESS) {
+            RCLCPP_ERROR(this->get_logger(), 
+                "Failed to bulk write goal current -- Result: %d", dxl_comm_result);
+            return;
+        }
+
+        for (int i = 0; i < num_motors; i++) {
+            RCLCPP_INFO(this->get_logger(), 
+                "goalCurrentBulk : [ID:%d] [CURRENT:%d]", 
+                msg->id[i], msg->current[i]);
         }
     }
 };
