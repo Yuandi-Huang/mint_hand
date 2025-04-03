@@ -14,10 +14,13 @@ import ast
 class ControlNode(Node):
     def __init__(self):
         super().__init__('finger_driver')
-        self.position_publisher = self.create_publisher(finger_manipulation.msg.GoalPosition, '/goal_position', self.qos_profile)
-        self.position_message = finger_manipulation.msg.GoalPosition()
+        self.position_publisher = self.create_publisher(
+            finger_manipulation.msg.GoalPositionBulk, '/goal_position_bulk', self.qos_profile)
+        self.position_message = finger_manipulation.msg.GoalPositionBulk()
     
     def setPosition(self, id, position):
+        if isinstance(id, int): id [id]
+        if isinstance(position, int): position = [position]
         self.position_message.id = id
         self.position_message.position = position
         return self.position_publisher.publish(self.position_message)
@@ -35,9 +38,8 @@ def playback(stdscr, controlNode, motors, poses, interval):
     stdscr.nodelay(True)
     while True:
         key = stdscr.getch()
-        if key != -1: break
-        for i in range(0,len(motors)):
-            controlNode.setPosition(int(motors[i]),int(poses[pose_idx][i]))
+        if key != -1: break 
+        controlNode.setPosition(motors,poses[pose_idx])
         pose_idx = (pose_idx + 1) % len(poses)
         time.sleep(interval)
 
@@ -49,7 +51,7 @@ def main():
     thread = threading.Thread(target=executor.spin, daemon=True)
     thread.start()
 
-    parser = argparse.ArgumentParser(description="Publishes /goal_position values for predefined poses on loop.")
+    parser = argparse.ArgumentParser(description="Publishes /goal_position_bulk values for predefined poses on loop.")
     parser.add_argument("filename", type=str, help="Path to playback text file")
     parser.add_argument("-i","--interval", type=float, default=2, help="Time delay in seconds before changing pose")
     args = parser.parse_args()

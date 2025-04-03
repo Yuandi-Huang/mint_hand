@@ -17,9 +17,9 @@ NUM_MOTORS = 16
 class ControlNode(Node):
     def __init__(self):
         super().__init__('finger_driver')
-        self.position_client = self.create_client(finger_manipulation.srv.GetPosition, '/get_position')
+        self.position_client = self.create_client(finger_manipulation.srv.GetPositionBulk, '/get_position_bulk')
         self.get_motor_status_client = self.create_client(finger_manipulation.srv.GetTorqueEnabled, '/get_torque_enabled')
-        self.position_request = finger_manipulation.srv.GetPosition.Request()        
+        self.position_request = finger_manipulation.srv.GetPositionBulk.Request()        
         self.get_motor_status_request = finger_manipulation.srv.GetTorqueEnabled.Request()
     
     async def getMotorStatus(self, id):
@@ -29,6 +29,7 @@ class ControlNode(Node):
         return None if future.result().disconnected else future.result().enabled
 
     async def getPosition(self, id):
+        if isinstance(id, int): id = [id]
         self.position_request.id = id
         future = self.position_client.call_async(self.position_request)
         await future
@@ -43,9 +44,8 @@ class ControlNode(Node):
 def recordDiscrete(controlNode, motors, poses):
     key = sys.stdin.read(1)
     while key != "q":
-        pose = []
-        for ID in motors:
-            pose.append(asyncio.run(controlNode.getPosition(id=ID)))
+        pose = asyncio.run(controlNode.getPosition(id=motors))
+        pose = list(pose)
         poses.append(pose)
         print("Saved:", pose)
         key = sys.stdin.read(1)
@@ -56,9 +56,8 @@ def recordContinuous(stdscr, controlNode, motors, poses, interval):
     while True:
         key = stdscr.getch()
         if key != -1: break
-        pose = []
-        for ID in motors:
-            pose.append(asyncio.run(controlNode.getPosition(id=ID)))
+        pose = asyncio.run(controlNode.getPosition(id=motors))
+        pose = list(pose)
         poses.append(pose)
         stdscr.addstr("Saved: " + str(pose) + "\n")
         time.sleep(interval)
