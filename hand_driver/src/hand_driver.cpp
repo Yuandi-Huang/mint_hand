@@ -1,6 +1,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include "std_msgs/msg/string.hpp"
-#include "finger_driver/finger_driver.hpp"
+#include "hand_driver/hand_driver.hpp"
 #include "dynamixel_sdk/dynamixel_sdk.h"
 
 using namespace dynamixel;
@@ -31,9 +31,9 @@ enum class OperatingMode : uint8_t {
     CURRENT_BASED_POSITION = 5
 };
 
-class finger_driver : public rclcpp::Node {
+class hand_driver : public rclcpp::Node {
 public:
-    finger_driver() : Node("finger_driver") {
+    hand_driver() : Node("hand_driver") {
 
         portHandler = PortHandler::getPortHandler(DEVICE_NAME);
         packetHandler = PacketHandler::getPacketHandler(PROTOCOL_VERSION);
@@ -51,65 +51,65 @@ public:
         }
         
         // Create services
-        set_torque_enabled_srv = this->create_service<finger_manipulation::srv::SetTorqueEnabled>(
-            "/set_torque_enabled", std::bind(&finger_driver::setTorqueEnabledCallback, this, _1, _2));
-        get_torque_enabled_srv = this->create_service<finger_manipulation::srv::GetTorqueEnabled>(
-            "/get_torque_enabled", std::bind(&finger_driver::getTorqueEnabledCallback, this, _1, _2));
-        get_torque_enabled_bulk_srv = this->create_service<finger_manipulation::srv::GetTorqueEnabledBulk>(
-            "/get_torque_enabled_bulk", std::bind(&finger_driver::getTorqueEnabledBulkCallback, this, _1, _2));     
-        get_position_srv = this->create_service<finger_manipulation::srv::GetPosition>(
-            "/get_position", std::bind(&finger_driver::getPresentPositionCallback, this, _1, _2));
-        get_position_bulk_srv = this->create_service<finger_manipulation::srv::GetPositionBulk>(
-            "/get_position_bulk", std::bind(&finger_driver::getPresentPositionBulkCallback, this, _1, _2));
-        get_position_limits_srv = this->create_service<finger_manipulation::srv::GetPositionLimits>(
-            "/get_position_limits", std::bind(&finger_driver::getPositionLimitsCallback, this, _1, _2));
-        set_position_limits_srv = this->create_service<finger_manipulation::srv::SetPositionLimits>(
-            "/set_position_limits", std::bind(&finger_driver::setPositionLimitsCallback, this, _1, _2));
-        get_current_srv = this->create_service<finger_manipulation::srv::GetCurrent>(
-            "/get_current", std::bind(&finger_driver::getPresentCurrentCallback, this, _1, _2));
-        get_current_bulk_srv = this->create_service<finger_manipulation::srv::GetCurrentBulk>(
-            "/get_current_bulk", std::bind(&finger_driver::getPresentCurrentBulkCallback, this, _1, _2));
-        get_temperature_srv = this->create_service<finger_manipulation::srv::GetTemperature>(
-            "/get_temperature", std::bind(&finger_driver::getPresentTemperatureCallback, this, _1, _2));
-        get_temperature_bulk_srv = this->create_service<finger_manipulation::srv::GetTemperatureBulk>(
-            "/get_temperature_bulk", std::bind(&finger_driver::getPresentTemperatureBulkCallback, this, _1, _2));
-        set_operating_mode_srv = this->create_service<finger_manipulation::srv::SetOperatingMode>(
-            "/set_operating_mode", std::bind(&finger_driver::setOperatingModeCallback, this, _1, _2));
+        set_torque_enabled_srv = this->create_service<mint_hand::srv::SetTorqueEnabled>(
+            "/set_torque_enabled", std::bind(&hand_driver::setTorqueEnabledCallback, this, _1, _2));
+        get_torque_enabled_srv = this->create_service<mint_hand::srv::GetTorqueEnabled>(
+            "/get_torque_enabled", std::bind(&hand_driver::getTorqueEnabledCallback, this, _1, _2));
+        get_torque_enabled_bulk_srv = this->create_service<mint_hand::srv::GetTorqueEnabledBulk>(
+            "/get_torque_enabled_bulk", std::bind(&hand_driver::getTorqueEnabledBulkCallback, this, _1, _2));     
+        get_position_srv = this->create_service<mint_hand::srv::GetPosition>(
+            "/get_position", std::bind(&hand_driver::getPresentPositionCallback, this, _1, _2));
+        get_position_bulk_srv = this->create_service<mint_hand::srv::GetPositionBulk>(
+            "/get_position_bulk", std::bind(&hand_driver::getPresentPositionBulkCallback, this, _1, _2));
+        get_position_limits_srv = this->create_service<mint_hand::srv::GetPositionLimits>(
+            "/get_position_limits", std::bind(&hand_driver::getPositionLimitsCallback, this, _1, _2));
+        set_position_limits_srv = this->create_service<mint_hand::srv::SetPositionLimits>(
+            "/set_position_limits", std::bind(&hand_driver::setPositionLimitsCallback, this, _1, _2));
+        get_current_srv = this->create_service<mint_hand::srv::GetCurrent>(
+            "/get_current", std::bind(&hand_driver::getPresentCurrentCallback, this, _1, _2));
+        get_current_bulk_srv = this->create_service<mint_hand::srv::GetCurrentBulk>(
+            "/get_current_bulk", std::bind(&hand_driver::getPresentCurrentBulkCallback, this, _1, _2));
+        get_temperature_srv = this->create_service<mint_hand::srv::GetTemperature>(
+            "/get_temperature", std::bind(&hand_driver::getPresentTemperatureCallback, this, _1, _2));
+        get_temperature_bulk_srv = this->create_service<mint_hand::srv::GetTemperatureBulk>(
+            "/get_temperature_bulk", std::bind(&hand_driver::getPresentTemperatureBulkCallback, this, _1, _2));
+        set_operating_mode_srv = this->create_service<mint_hand::srv::SetOperatingMode>(
+            "/set_operating_mode", std::bind(&hand_driver::setOperatingModeCallback, this, _1, _2));
 
         // Create subscribers
-        goal_position_sub = this->create_subscription<finger_manipulation::msg::GoalPosition>(
-            "/goal_position", 10, std::bind(&finger_driver::goalPositionCallback, this, _1));
-        goal_position_bulk_sub = this->create_subscription<finger_manipulation::msg::GoalPositionBulk>(
-            "/goal_position_bulk", 10, std::bind(&finger_driver::goalPositionBulkCallback, this, _1));
-        goal_current_sub = this->create_subscription<finger_manipulation::msg::GoalCurrent>(
-            "/goal_current", 10, std::bind(&finger_driver::goalCurrentCallback, this, _1));
-        goal_current_bulk_sub = this->create_subscription<finger_manipulation::msg::GoalCurrentBulk>(
-            "/goal_current_bulk", 10, std::bind(&finger_driver::goalCurrentBulkCallback, this, _1));
+        goal_position_sub = this->create_subscription<mint_hand::msg::GoalPosition>(
+            "/goal_position", 10, std::bind(&hand_driver::goalPositionCallback, this, _1));
+        goal_position_bulk_sub = this->create_subscription<mint_hand::msg::GoalPositionBulk>(
+            "/goal_position_bulk", 10, std::bind(&hand_driver::goalPositionBulkCallback, this, _1));
+        goal_current_sub = this->create_subscription<mint_hand::msg::GoalCurrent>(
+            "/goal_current", 10, std::bind(&hand_driver::goalCurrentCallback, this, _1));
+        goal_current_bulk_sub = this->create_subscription<mint_hand::msg::GoalCurrentBulk>(
+            "/goal_current_bulk", 10, std::bind(&hand_driver::goalCurrentBulkCallback, this, _1));
     }
 
-    virtual ~finger_driver() {
+    virtual ~hand_driver() {
         portHandler->closePort();
     }
 
 private:
-    rclcpp::Service<finger_manipulation::srv::SetTorqueEnabled>::SharedPtr set_torque_enabled_srv;
-    rclcpp::Service<finger_manipulation::srv::GetTorqueEnabled>::SharedPtr get_torque_enabled_srv;
-    rclcpp::Service<finger_manipulation::srv::GetTorqueEnabledBulk>::SharedPtr get_torque_enabled_bulk_srv;
+    rclcpp::Service<mint_hand::srv::SetTorqueEnabled>::SharedPtr set_torque_enabled_srv;
+    rclcpp::Service<mint_hand::srv::GetTorqueEnabled>::SharedPtr get_torque_enabled_srv;
+    rclcpp::Service<mint_hand::srv::GetTorqueEnabledBulk>::SharedPtr get_torque_enabled_bulk_srv;
 
-    rclcpp::Service<finger_manipulation::srv::GetCurrent>::SharedPtr get_current_srv;
-    rclcpp::Service<finger_manipulation::srv::GetCurrentBulk>::SharedPtr get_current_bulk_srv;
-    rclcpp::Service<finger_manipulation::srv::GetPosition>::SharedPtr get_position_srv;
-    rclcpp::Service<finger_manipulation::srv::GetPositionBulk>::SharedPtr get_position_bulk_srv;
-    rclcpp::Service<finger_manipulation::srv::GetPositionLimits>::SharedPtr get_position_limits_srv;
-    rclcpp::Service<finger_manipulation::srv::SetPositionLimits>::SharedPtr set_position_limits_srv;
-    rclcpp::Service<finger_manipulation::srv::GetTemperature>::SharedPtr get_temperature_srv;
-    rclcpp::Service<finger_manipulation::srv::GetTemperatureBulk>::SharedPtr get_temperature_bulk_srv;
-    rclcpp::Service<finger_manipulation::srv::SetOperatingMode>::SharedPtr set_operating_mode_srv;
+    rclcpp::Service<mint_hand::srv::GetCurrent>::SharedPtr get_current_srv;
+    rclcpp::Service<mint_hand::srv::GetCurrentBulk>::SharedPtr get_current_bulk_srv;
+    rclcpp::Service<mint_hand::srv::GetPosition>::SharedPtr get_position_srv;
+    rclcpp::Service<mint_hand::srv::GetPositionBulk>::SharedPtr get_position_bulk_srv;
+    rclcpp::Service<mint_hand::srv::GetPositionLimits>::SharedPtr get_position_limits_srv;
+    rclcpp::Service<mint_hand::srv::SetPositionLimits>::SharedPtr set_position_limits_srv;
+    rclcpp::Service<mint_hand::srv::GetTemperature>::SharedPtr get_temperature_srv;
+    rclcpp::Service<mint_hand::srv::GetTemperatureBulk>::SharedPtr get_temperature_bulk_srv;
+    rclcpp::Service<mint_hand::srv::SetOperatingMode>::SharedPtr set_operating_mode_srv;
 
-    rclcpp::Subscription<finger_manipulation::msg::GoalPosition>::SharedPtr goal_position_sub;
-    rclcpp::Subscription<finger_manipulation::msg::GoalPositionBulk>::SharedPtr goal_position_bulk_sub;
-    rclcpp::Subscription<finger_manipulation::msg::GoalCurrent>::SharedPtr goal_current_sub;
-    rclcpp::Subscription<finger_manipulation::msg::GoalCurrentBulk>::SharedPtr goal_current_bulk_sub;
+    rclcpp::Subscription<mint_hand::msg::GoalPosition>::SharedPtr goal_position_sub;
+    rclcpp::Subscription<mint_hand::msg::GoalPositionBulk>::SharedPtr goal_position_bulk_sub;
+    rclcpp::Subscription<mint_hand::msg::GoalCurrent>::SharedPtr goal_current_sub;
+    rclcpp::Subscription<mint_hand::msg::GoalCurrentBulk>::SharedPtr goal_current_bulk_sub;
 
     PortHandler * portHandler;
     PacketHandler * packetHandler;
@@ -124,8 +124,8 @@ private:
      * @param response Unused.
      */
     void setTorqueEnabledCallback(
-        const std::shared_ptr<finger_manipulation::srv::SetTorqueEnabled::Request> request,
-        std::shared_ptr<finger_manipulation::srv::SetTorqueEnabled::Response> response) {
+        const std::shared_ptr<mint_hand::srv::SetTorqueEnabled::Request> request,
+        std::shared_ptr<mint_hand::srv::SetTorqueEnabled::Response> response) {
 
         uint8_t dxl_error = 0;
         int dxl_comm_result = packetHandler->write1ByteTxRx(
@@ -154,8 +154,8 @@ private:
      * @param response Contains the present current in mA.
      */
     void getPresentCurrentCallback(
-        const std::shared_ptr<finger_manipulation::srv::GetCurrent::Request> request,
-        std::shared_ptr<finger_manipulation::srv::GetCurrent::Response> response) {
+        const std::shared_ptr<mint_hand::srv::GetCurrent::Request> request,
+        std::shared_ptr<mint_hand::srv::GetCurrent::Response> response) {
 
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
@@ -184,8 +184,8 @@ private:
      * @param response Contains an array of present current in mA.
      */
     void getPresentCurrentBulkCallback(
-        const std::shared_ptr<finger_manipulation::srv::GetCurrentBulk::Request> request,
-        std::shared_ptr<finger_manipulation::srv::GetCurrentBulk::Response> response) {
+        const std::shared_ptr<mint_hand::srv::GetCurrentBulk::Request> request,
+        std::shared_ptr<mint_hand::srv::GetCurrentBulk::Response> response) {
 
         auto group_sync_read = GroupSyncRead(portHandler, packetHandler, ADDR_PRESENT_CURRENT, 2);
         int num_motors = request->id.size();
@@ -223,8 +223,8 @@ private:
      * @param response Contains the present raw encoder position.
      */
     void getPresentPositionCallback(
-        const std::shared_ptr<finger_manipulation::srv::GetPosition::Request> request,
-        std::shared_ptr<finger_manipulation::srv::GetPosition::Response> response) {
+        const std::shared_ptr<mint_hand::srv::GetPosition::Request> request,
+        std::shared_ptr<mint_hand::srv::GetPosition::Response> response) {
 
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
@@ -253,8 +253,8 @@ private:
      * @param response Contains an array of present raw encoder positions.
      */
     void getPresentPositionBulkCallback(
-        const std::shared_ptr<finger_manipulation::srv::GetPositionBulk::Request> request,
-        std::shared_ptr<finger_manipulation::srv::GetPositionBulk::Response> response) {
+        const std::shared_ptr<mint_hand::srv::GetPositionBulk::Request> request,
+        std::shared_ptr<mint_hand::srv::GetPositionBulk::Response> response) {
 
         auto group_sync_read = GroupSyncRead(portHandler, packetHandler, ADDR_PRESENT_POSITION, 4);
         int num_motors = request->id.size();
@@ -292,8 +292,8 @@ private:
      * @param response Contains the min and max encoder position limits.
      */
     void getPositionLimitsCallback(
-        const std::shared_ptr<finger_manipulation::srv::GetPositionLimits::Request> request,
-        std::shared_ptr<finger_manipulation::srv::GetPositionLimits::Response> response) {
+        const std::shared_ptr<mint_hand::srv::GetPositionLimits::Request> request,
+        std::shared_ptr<mint_hand::srv::GetPositionLimits::Response> response) {
 
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
@@ -331,8 +331,8 @@ private:
      * @param response Unused.
      */
     void setPositionLimitsCallback(
-        const std::shared_ptr<finger_manipulation::srv::SetPositionLimits::Request> request,
-        std::shared_ptr<finger_manipulation::srv::SetPositionLimits::Response> response) {
+        const std::shared_ptr<mint_hand::srv::SetPositionLimits::Request> request,
+        std::shared_ptr<mint_hand::srv::SetPositionLimits::Response> response) {
 
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
@@ -367,8 +367,8 @@ private:
      * @param response Contains the present temperature in Celsius.
      */
     void getPresentTemperatureCallback(
-        const std::shared_ptr<finger_manipulation::srv::GetTemperature::Request> request,
-        std::shared_ptr<finger_manipulation::srv::GetTemperature::Response> response) {
+        const std::shared_ptr<mint_hand::srv::GetTemperature::Request> request,
+        std::shared_ptr<mint_hand::srv::GetTemperature::Response> response) {
 
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
@@ -397,8 +397,8 @@ private:
      * @param response Contains an array of the present temperatures in Celsius.
      */
     void getPresentTemperatureBulkCallback(
-        const std::shared_ptr<finger_manipulation::srv::GetTemperatureBulk::Request> request,
-        std::shared_ptr<finger_manipulation::srv::GetTemperatureBulk::Response> response) {
+        const std::shared_ptr<mint_hand::srv::GetTemperatureBulk::Request> request,
+        std::shared_ptr<mint_hand::srv::GetTemperatureBulk::Response> response) {
 
         auto group_sync_read = GroupSyncRead(portHandler, packetHandler, ADDR_PRESENT_TEMP, 1);
         int num_motors = request->id.size();
@@ -437,8 +437,8 @@ private:
      * @param response Unused.
      */
     void setOperatingModeCallback(
-        const std::shared_ptr<finger_manipulation::srv::SetOperatingMode::Request> request,
-        std::shared_ptr<finger_manipulation::srv::SetOperatingMode::Response> response) {
+        const std::shared_ptr<mint_hand::srv::SetOperatingMode::Request> request,
+        std::shared_ptr<mint_hand::srv::SetOperatingMode::Response> response) {
         
         int dxl_comm_result = COMM_TX_FAIL;
         uint8_t dxl_error = 0;
@@ -493,8 +493,8 @@ private:
      * @param response Contains the motor's torque state (enabled/disabled).
      */
     void getTorqueEnabledCallback(
-        const std::shared_ptr<finger_manipulation::srv::GetTorqueEnabled::Request> request,
-        std::shared_ptr<finger_manipulation::srv::GetTorqueEnabled::Response> response) {
+        const std::shared_ptr<mint_hand::srv::GetTorqueEnabled::Request> request,
+        std::shared_ptr<mint_hand::srv::GetTorqueEnabled::Response> response) {
 
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
@@ -524,8 +524,8 @@ private:
      * @param response Contains an array of the motors' torque states (enabled/disabled).
      */
     void getTorqueEnabledBulkCallback(
-        const std::shared_ptr<finger_manipulation::srv::GetTorqueEnabledBulk::Request> request,
-        std::shared_ptr<finger_manipulation::srv::GetTorqueEnabledBulk::Response> response) {
+        const std::shared_ptr<mint_hand::srv::GetTorqueEnabledBulk::Request> request,
+        std::shared_ptr<mint_hand::srv::GetTorqueEnabledBulk::Response> response) {
 
         auto group_sync_read = GroupSyncRead(portHandler, packetHandler, ADDR_TORQUE_ENABLE, 1);
         int num_motors = request->id.size();
@@ -582,7 +582,7 @@ private:
      *
      * @param msg Contains the motor ID and target encoder value.
      */
-    void goalPositionCallback(const finger_manipulation::msg::GoalPosition::SharedPtr msg) {
+    void goalPositionCallback(const mint_hand::msg::GoalPosition::SharedPtr msg) {
 
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
@@ -607,7 +607,7 @@ private:
      * @param msg Contains an array of motor IDs and goal positions.
      */
     void goalPositionBulkCallback(
-        const finger_manipulation::msg::GoalPositionBulk::SharedPtr msg) {
+        const mint_hand::msg::GoalPositionBulk::SharedPtr msg) {
 
         auto group_sync_write = GroupSyncWrite(portHandler, packetHandler, ADDR_GOAL_POSITION, 4);
         int num_motors = (int)msg->id.size();
@@ -647,7 +647,7 @@ private:
      *
      * @param msg Contains the motor ID and target current in mA.
      */
-    void goalCurrentCallback(const finger_manipulation::msg::GoalCurrent::SharedPtr msg) {
+    void goalCurrentCallback(const mint_hand::msg::GoalCurrent::SharedPtr msg) {
 
         uint8_t dxl_error = 0;
         int dxl_comm_result = COMM_TX_FAIL;
@@ -672,7 +672,7 @@ private:
      * @param msg Contains an array of motor IDs and goal currents.
      */
     void goalCurrentBulkCallback(
-        const finger_manipulation::msg::GoalCurrentBulk::SharedPtr msg) {
+        const mint_hand::msg::GoalCurrentBulk::SharedPtr msg) {
 
         auto group_sync_write = GroupSyncWrite(portHandler, packetHandler, ADDR_GOAL_CURRENT, 2);
         int num_motors = (int)msg->id.size();
@@ -706,7 +706,7 @@ private:
 
 int main(int argc, char **argv) {
     rclcpp::init(argc, argv);
-    auto node = std::make_shared<finger_driver>();
+    auto node = std::make_shared<hand_driver>();
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;

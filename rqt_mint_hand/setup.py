@@ -1,6 +1,6 @@
 from setuptools import setup
 
-PACKAGE_NAME = 'rqt_finger_manipulation'
+PACKAGE_NAME = 'rqt_mint_hand'
 
 setup(
     name=PACKAGE_NAME,
@@ -16,10 +16,10 @@ setup(
     zip_safe=True,
     maintainer='Yuandi Huang',
     maintainer_email='yuandi@umich.edu',
-    description='Custom rqt interface for finger_manipulation package',
+    description='Diagnostics and control GUI for mint_hand package',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': ["rqt_finger_manipulation = rqt_finger_manipulation.rqt_finger_manipulation:main"],
+        'console_scripts': ["rqt_mint_hand = rqt_mint_hand.rqt_mint_hand:main"],
     },
 )

@@ -2,7 +2,7 @@
 
 Repository of ROS 2 packages for communication with a 4-DOF robotic finger.\
 Contains two packages:
-- finger_manipulation: a driver node for main control functions. It contains the following services and topics, addressed by motor ID:
+- mmint_hand: a driver node for main control functions. It contains the following services and topics, addressed by motor ID:
 	* get_current: service to read present current in mA being consumed by a motor
 	* get_position: service to read present raw encoder position
 	* get_position_limits: service to read min and max encoder limits set for a motor
@@ -14,7 +14,7 @@ Contains two packages:
 	* goal_current: topic to publish current values in mA to supply to a motor
 
 
-- rqt_finger_manipulation: a custom GUI plugin for real-time monitoring, control and diagnostics through rqt.
+- rqt_mmint_hand: a custom GUI plugin for real-time monitoring, control and diagnostics through rqt.
 
 ## Dependencies
 - [ROS 2](https://docs.ros.org/en/jazzy/Installation.html)
@@ -22,9 +22,9 @@ Contains two packages:
 
 ## Installation:
 ```
-git clone https://github.com/Yuandi-Huang/finger_manipulation.git
-colcon build --packages-select finger_manipulation
-colcon build --packages-select rqt_finger_manipulation
+git clone https://github.com/Yuandi-Huang/mmint_hand.git
+colcon build --packages-select mmint_hand
+colcon build --packages-select rqt_mmint_hand
 source install/setup.bash
 ```
 ## Acknowledgments

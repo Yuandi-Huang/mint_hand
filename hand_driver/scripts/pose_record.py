@@ -3,8 +3,8 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy
 
-import finger_manipulation.srv
-import finger_manipulation.msg
+import mint_hand.srv
+import mint_hand.msg
 import threading
 import argparse
 import asyncio
@@ -16,11 +16,11 @@ NUM_MOTORS = 16
 
 class ControlNode(Node):
     def __init__(self):
-        super().__init__('finger_driver')
-        self.position_client = self.create_client(finger_manipulation.srv.GetPositionBulk, '/get_position_bulk')
-        self.get_motor_status_client = self.create_client(finger_manipulation.srv.GetTorqueEnabled, '/get_torque_enabled')
-        self.position_request = finger_manipulation.srv.GetPositionBulk.Request()        
-        self.get_motor_status_request = finger_manipulation.srv.GetTorqueEnabled.Request()
+        super().__init__('hand_driver')
+        self.position_client = self.create_client(mint_hand.srv.GetPositionBulk, '/get_position_bulk')
+        self.get_motor_status_client = self.create_client(mint_hand.srv.GetTorqueEnabled, '/get_torque_enabled')
+        self.position_request = mint_hand.srv.GetPositionBulk.Request()        
+        self.get_motor_status_request = mint_hand.srv.GetTorqueEnabled.Request()
     
     async def getMotorStatus(self, id):
         self.get_motor_status_request.id = id

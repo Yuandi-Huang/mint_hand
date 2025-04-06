@@ -3,8 +3,8 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSHistoryPolicy, QoSReliabilityPolicy
 
-import finger_manipulation.srv
-import finger_manipulation.msg
+import mint_hand.srv
+import mint_hand.msg
 import threading
 import argparse
 import curses
@@ -13,10 +13,10 @@ import ast
 
 class ControlNode(Node):
     def __init__(self):
-        super().__init__('finger_driver')
+        super().__init__('hand_driver')
         self.position_publisher = self.create_publisher(
-            finger_manipulation.msg.GoalPositionBulk, '/goal_position_bulk', self.qos_profile)
-        self.position_message = finger_manipulation.msg.GoalPositionBulk()
+            mint_hand.msg.GoalPositionBulk, '/goal_position_bulk', self.qos_profile)
+        self.position_message = mint_hand.msg.GoalPositionBulk()
     
     def setPosition(self, id, position):
         if isinstance(id, int): id [id]

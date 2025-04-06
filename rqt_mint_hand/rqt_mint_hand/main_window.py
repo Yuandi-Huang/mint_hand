@@ -1991,7 +1991,7 @@ class main_window(object):
 
     def retranslateUi(self, main_window):
         _translate = QtCore.QCoreApplication.translate
-        main_window.setWindowTitle(_translate("main_window", "Finger Control GUI"))
+        main_window.setWindowTitle(_translate("main_window", "Hand Control GUI"))
         self.set_pose_button.setText(_translate("main_window", "Set Pose"))
         self.reset_pose_button.setText(_translate("main_window", "Reset Pose"))
         self.INDEX_PIP_label.setText(_translate("main_window", "PIP (ID: 3)"))

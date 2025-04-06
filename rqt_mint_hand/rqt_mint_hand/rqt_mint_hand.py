@@ -7,9 +7,9 @@ from PyQt5.QtCore import QTimer, QEventLoop
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtGui import QIntValidator
 
-import finger_manipulation.srv
-import finger_manipulation.msg
-from rqt_finger_manipulation.main_window import main_window
+import mint_hand.srv
+import mint_hand.msg
+from rqt_mint_hand.main_window import main_window
 
 import sys
 import asyncio
@@ -42,32 +42,32 @@ motorNames = {v: k for k, v in motorIDs.items()}
 
 class ControlNode(Node):
     def __init__(self):
-        super().__init__('rqt_finger_manipulation')
+        super().__init__('rqt_mint_hand')
 
-        self.current_client = self.create_client(finger_manipulation.srv.GetCurrentBulk, '/get_current_bulk')
-        self.position_client = self.create_client(finger_manipulation.srv.GetPositionBulk, '/get_position_bulk')
-        self.temperature_client = self.create_client(finger_manipulation.srv.GetTemperatureBulk, '/get_temperature_bulk')
-        self.get_motor_status_client = self.create_client(finger_manipulation.srv.GetTorqueEnabledBulk, '/get_torque_enabled_bulk')
+        self.current_client = self.create_client(mint_hand.srv.GetCurrentBulk, '/get_current_bulk')
+        self.position_client = self.create_client(mint_hand.srv.GetPositionBulk, '/get_position_bulk')
+        self.temperature_client = self.create_client(mint_hand.srv.GetTemperatureBulk, '/get_temperature_bulk')
+        self.get_motor_status_client = self.create_client(mint_hand.srv.GetTorqueEnabledBulk, '/get_torque_enabled_bulk')
 
-        self.get_position_limits_client = self.create_client(finger_manipulation.srv.GetPositionLimits, '/get_position_limits')
-        self.set_position_limits_client = self.create_client(finger_manipulation.srv.SetPositionLimits, '/set_position_limits')
-        self.set_motor_status_client = self.create_client(finger_manipulation.srv.SetTorqueEnabled, '/set_torque_enabled')
+        self.get_position_limits_client = self.create_client(mint_hand.srv.GetPositionLimits, '/get_position_limits')
+        self.set_position_limits_client = self.create_client(mint_hand.srv.SetPositionLimits, '/set_position_limits')
+        self.set_motor_status_client = self.create_client(mint_hand.srv.SetTorqueEnabled, '/set_torque_enabled')
 
-        self.position_publisher = self.create_publisher(finger_manipulation.msg.GoalPosition, '/goal_position', self.qos_profile)
+        self.position_publisher = self.create_publisher(mint_hand.msg.GoalPosition, '/goal_position', self.qos_profile)
 
         while not self.position_client.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('waiting for service...')
             
-        self.current_request = finger_manipulation.srv.GetCurrentBulk.Request()
-        self.position_request = finger_manipulation.srv.GetPositionBulk.Request()
-        self.temperature_request = finger_manipulation.srv.GetTemperatureBulk.Request()
+        self.current_request = mint_hand.srv.GetCurrentBulk.Request()
+        self.position_request = mint_hand.srv.GetPositionBulk.Request()
+        self.temperature_request = mint_hand.srv.GetTemperatureBulk.Request()
 
-        self.get_position_limits_request = finger_manipulation.srv.GetPositionLimits.Request()
-        self.set_position_limits_request = finger_manipulation.srv.SetPositionLimits.Request()
-        self.get_motor_status_request = finger_manipulation.srv.GetTorqueEnabledBulk.Request()
-        self.set_motor_status_request = finger_manipulation.srv.SetTorqueEnabled.Request()
+        self.get_position_limits_request = mint_hand.srv.GetPositionLimits.Request()
+        self.set_position_limits_request = mint_hand.srv.SetPositionLimits.Request()
+        self.get_motor_status_request = mint_hand.srv.GetTorqueEnabledBulk.Request()
+        self.set_motor_status_request = mint_hand.srv.SetTorqueEnabled.Request()
         
-        self.position_message = finger_manipulation.msg.GoalPosition()
+        self.position_message = mint_hand.msg.GoalPosition()
     
     async def getTemperature(self, id):
         """
@@ -437,4 +437,4 @@ class RqtPlugin(Plugin):
         asyncio.run(self.disableAllMotors())
 
 def main():
-    sys.exit(Main().main(sys.argv, standalone="rqt_finger_manipulation.rqt_finger_manipulation"))
+    sys.exit(Main().main(sys.argv, standalone="rqt_mint_hand.rqt_mint_hand"))

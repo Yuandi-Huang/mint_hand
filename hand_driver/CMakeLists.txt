@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(finger_manipulation)
+project(mint_hand)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -43,18 +43,18 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 ament_export_dependencies(rosidl_default_runtime rclcpp std_msgs dynamixel_sdk)
 
-add_executable(finger_driver src/finger_driver.cpp)
-target_include_directories(finger_driver PUBLIC
+add_executable(hand_driver src/hand_driver.cpp)
+target_include_directories(hand_driver PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
-target_link_libraries(finger_driver
-  finger_manipulation__rosidl_typesupport_cpp
+target_link_libraries(hand_driver
+  mint_hand__rosidl_typesupport_cpp
 )
-ament_target_dependencies(finger_driver rclcpp std_msgs dynamixel_sdk rosidl_default_runtime)
+ament_target_dependencies(hand_driver rclcpp std_msgs dynamixel_sdk rosidl_default_runtime)
 
 install(TARGETS 
-  finger_driver
+  hand_driver
   DESTINATION lib/${PROJECT_NAME}
 )
 

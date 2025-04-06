@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>rqt_finger_manipulation</name>
+  <name>rqt_mint_hand</name>
   <version>0.0.1</version>
-  <description>Custom rqt interface for finger_manipulation package</description>
+  <description>Diagnostics and control GUI for mint_hand package</description>
   <maintainer email="yuandi@umich.edu">Yuandi Huang</maintainer>
   <license>Apache-2.0</license>
 
-  <depend>finger_manipulation</depend>
-  <depend>finger_manipulation_interfaces</depend>
+  <depend>mint_hand</depend>
+  <depend>mint_hand_interfaces</depend>
 
   <test_depend>ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>

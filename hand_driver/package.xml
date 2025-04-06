@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>finger_manipulation</name>
+  <name>mint_hand</name>
   <version>0.0.1</version>
-  <description>Individual joint control for a single finger</description>
+  <description>Core control functions for a 16 DoF robot hand</description>
   <maintainer email="yuandi@umich.edu">Yuandi Huang</maintainer>
   <license>Apache-2.0</license>
 

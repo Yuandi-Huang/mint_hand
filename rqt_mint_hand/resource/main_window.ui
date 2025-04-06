@@ -29,7 +29,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Finger Control GUI</string>
+   <string>Hand Control GUI</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
