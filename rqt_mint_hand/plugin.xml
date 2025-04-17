@@ -1,0 +1,13 @@
+<library path="src">
+    <class name="Hand Control Interface" type="rqt_mint_hand.rqt_mint_hand.RqtPlugin" base_class_type="rqt_gui_py::Plugin">
+        <description>MINT Hand RQt Plugin</description>
+        <qtgui>
+            <group>
+              <label>Miscellaneous Tools</label>
+            </group>
+            <label>Hand Control GUI</label>
+            <icon type="theme">applications-science</icon>
+            <statustip>Hand Control GUI</statustip>
+        </qtgui>
+    </class>
+</library>
