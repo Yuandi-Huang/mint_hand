@@ -1,3 +1,8 @@
+> [!NOTE]
+> This repository archives my personal software contributions to the Mint Hand project.
+> The project is now maintained under the [organization repository](https://github.com/MintHand/mint_hand), which 
+> additionally includes mechanical and electrical CAD.
+
 ## Overview
 
 Repository of ROS 2 packages for servo motor control of a 16-DOF robotic hand.\
@@ -33,7 +38,7 @@ Contains the following two packages:
 
 ## Installation:
 ```
-git clone https://github.com/Yuandi-Huang/mint_hand.git
+git clone https://github.com/MintHand/mint_hand
 colcon build --packages-select mint_hand
 colcon build --packages-select rqt_mint_hand
 source install/setup.bash
